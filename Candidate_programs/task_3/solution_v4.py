@@ -7,7 +7,7 @@ def solve(grid):
     dirs = [(1,0),(-1,0),(0,1),(0,-1)]
     for i in range(R):
         for j in range(C):
-            if grid[i][j]==1 and not seen[i][j]:
+            if grid[i][j] != 0 and not seen[i][j]:
                 comp = []
                 dq = deque()
                 dq.append((i,j))
@@ -17,22 +17,13 @@ def solve(grid):
                     comp.append((r,c))
                     for dr,dc in dirs:
                         nr, nc = r+dr, c+dc
-                        if 0<=nr<R and 0<=nc<C:
-                            if grid[nr][nc]==1 and not seen[nr][nc]:
-                                seen[nr][nc] = True
-                                dq.append((nr,nc))
-                if not comp: 
-                    continue
+                        if 0<=nr<R and 0<=nc<C and grid[nr][nc] != 0 and not seen[nr][nc]:
+                            seen[nr][nc] = True
+                            dq.append((nr,nc))
+                # determine target as the maximum original value in the component
+                tgt = max(grid[r][c] for r,c in comp)
+                # compute distances from border; border if any 4-neighbor is out of comp (or out-of-bound or 0)
                 comp_set = set(comp)
-                size = len(comp)
-                # choose target fill value based on component size:
-                # if large, use modest fill; if small, use a bigger accent.
-                if size > 30:
-                    tgt = 2
-                elif size >= 10:
-                    tgt = 4
-                else:
-                    tgt = 6
                 dist = {}
                 dq2 = deque()
                 for (r,c) in comp:
@@ -46,32 +37,21 @@ def solve(grid):
                         dist[(r,c)] = 0
                         dq2.append((r,c))
                 while dq2:
-                    r, c = dq2.popleft()
+                    r,c = dq2.popleft()
                     for dr,dc in dirs:
                         nr, nc = r+dr, c+dc
                         if (nr,nc) in comp_set and (nr,nc) not in dist:
                             dist[(nr,nc)] = dist[(r,c)] + 1
                             dq2.append((nr,nc))
-                maxd = max(dist.values()) if dist else 0
+                if dist:
+                    maxd = max(dist.values())
+                else:
+                    maxd = 0
                 for (r,c) in comp:
-                    if maxd==0:
-                        newcol = 1
+                    d = dist.get((r,c),0)
+                    if maxd == 0:
+                        newcol = grid[r][c]
                     else:
-                        d = dist[(r,c)]
-                        if d==0:
-                            newcol = 1
-                        else:
-                            # scale d from 0 to maxd into 0 to (tgt-1)
-                            newcol = 1 + int(round((tgt - 1) * (d / maxd)))
+                        newcol = 1 if d==0 else 1 + int(round((tgt - 1)* d/ maxd))
                     out[r][c] = newcol
     return out
-
-if __name__=="__main__":
-    import sys, json
-    data = sys.stdin.read()
-    if data:
-        grid = json.loads(data)
-        res = solve(grid)
-        sys.stdout.write(json.dumps(res))
-    else:
-        pass

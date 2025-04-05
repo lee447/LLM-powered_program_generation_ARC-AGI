@@ -1,17 +1,22 @@
-from typing import List
-def solve(grid: List[List[int]]) -> List[List[int]]:
-    out = [row[:] for row in grid]
-    n = len(out)
-    if n == 0: 
-        return out
-    m = len(out[0])
-    blues = [i for i in range(min(n, m)) if out[i][i] == 1]
+def solve(grid):
+    rows, cols = len(grid), len(grid[0])
+    blues = [(r, c) for r in range(rows) for c in range(cols) if grid[r][c] == 1]
     if len(blues) < 2:
-        return out
-    gap = blues[1] - blues[0]
-    pos = blues[-1] + gap
-    while pos < min(n, m):
-        if out[pos][pos] != 1:
-            out[pos][pos] = 2
-        pos += gap
-    return out
+        return grid
+    blues.sort()
+    dr = blues[1][0] - blues[0][0]
+    dc = blues[1][1] - blues[0][1]
+    chain = [blues[0]]
+    for pos in blues[1:]:
+        pr, pc = chain[-1]
+        if (pos[0] - pr, pos[1] - pc) == (dr, dc):
+            chain.append(pos)
+    r, c = chain[-1]
+    while True:
+        r, c = r + dr, c + dc
+        if not (0 <= r < rows and 0 <= c < cols):
+            break
+        if grid[r][c] == 1:
+            continue
+        grid[r][c] = 2
+    return grid

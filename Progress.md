@@ -105,7 +105,7 @@ Added the following functions:
     5. Print results.
 
 ## Current results:
-The current, unfinished, pipeline **(using GPT-o3-mini)** was tested on the first 10 tasks of the created Evaluation_set (0 100 tasks). The following are the results:
+The current, unfinished, pipeline **(using GPT-o3-mini)** was tested on the first 10 tasks of the created Evaluation_set (0 100 tasks). The costs were about 2CHF (1.95CHF) The following are the results:
 
     Saved program for task 1 as version 1: Candidate_programs\task_1\solution_v1.py
     Saved program for task 1 as version 2: Candidate_programs\task_1\solution_v2.py
@@ -183,7 +183,7 @@ The current, unfinished, pipeline **(using GPT-o3-mini)** was tested on the firs
 ---
 ---
 
-When manually evaluating the programs on the test tasks of those 10 tasks the following accuracies were received:
+**When manually evaluating the programs on the test tasks of those 10 tasks the following accuracies were received:**
 
 ---
 
@@ -233,3 +233,232 @@ Task 10:
 
 ---
 ---
+
+# 03.04
+
+## Additions:
+Implemented a Revision-Step:
+- For each LLM-generated program the performance on the demonstration pairs is evaluated. The revision-step is meant to only be used, if a program is unable to solve all of the tasks demonstration pairs correctly. Therefor for each program a score is calculated:
+
+        Amount of correct transformations / 
+        Amount of demonstration pairs
+
+- Each program that has a score < 1 will be be sent back to the LLM together with the tasks demonstration pair inputs, outputs and the programs generated output. The LLM will be asked to create another program that is added to the task folder together with the already present programs.
+- For each task there are currently 2-4 programs: 2 if both initial programs solve all demonstration pairs correctly, 3 if only one of the initial programs solves them all correctly, 4 if both initial programs were unable to solve the tasks demonstration pairs correctly.
+
+---
+
+**Revision Prompt:**
+
+
+    revision_prompt = """
+    In the following you'll receive a Python function that attempted to solve the following task. It did'nt succeed and you are tasked with fixing it.
+
+    - The function must be named: `solve(grid: List[List[int]]) -> List[List[int]]`
+    - Include only the code and necessary imports (e.g., `import numpy as np`)
+    - Do not include comments, explanations, or print statements
+    - Do not hard-code values or specific grid sizes — the function must generalize based on the patterns in the examples
+    - Ensure your solution works for all provided input-output pairs
+    """
+
+---
+
+
+The cost for solving 10 tasks, including the revision step, are about 2.27CHF. This could be higher, when the initial programs are not effective at solving the tasks (therefor leading to more revised programs being generated and thereby more API calls). There was'nt a improvement in the accuracy for the first 10 tasks of the Evaluation_set. Most revised programs (so programs of tasks that were'nt able to solve the demonstration pairs) were also unable to solve the demonstration pairs (with some improvements see e.g. task 8 where solution_v4.py [revision of solution_v2.py] was improved from no correct predictions to 0.5 [50%] correct predictions):
+
+
+
+    Built tailored prompt.
+    Saved program for task 1 as version 1: Candidate_programs\task_1\solution_v1.py
+    Saved program for task 1 as version 2: Candidate_programs\task_1\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 1 as version 3: Candidate_programs\task_1\solution_v3.py
+    Revising solution_v2.py...
+    Saved program for task 1 as version 4: Candidate_programs\task_1\solution_v4.py
+    Task 1 evaluation results:
+    Program solution_v1.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v2.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v3.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v4.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 2 as version 1: Candidate_programs\task_2\solution_v1.py
+    Saved program for task 2 as version 2: Candidate_programs\task_2\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 2 as version 3: Candidate_programs\task_2\solution_v3.py
+    Revising solution_v2.py...
+    Saved program for task 2 as version 4: Candidate_programs\task_2\solution_v4.py
+    Task 2 evaluation results:
+    Program solution_v1.py solved 0 out of 4 pairs. Score: 0.00
+    Program solution_v2.py solved 0 out of 4 pairs. Score: 0.00
+    Program solution_v3.py solved 0 out of 4 pairs. Score: 0.00
+    Program solution_v4.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 3 as version 1: Candidate_programs\task_3\solution_v1.py
+    Saved program for task 3 as version 2: Candidate_programs\task_3\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 3 as version 3: Candidate_programs\task_3\solution_v3.py
+    Revising solution_v2.py...
+    Saved program for task 3 as version 4: Candidate_programs\task_3\solution_v4.py
+    Task 3 evaluation results:
+    Program solution_v1.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v2.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v3.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v4.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 4 as version 1: Candidate_programs\task_4\solution_v1.py
+    Saved program for task 4 as version 2: Candidate_programs\task_4\solution_v2.py
+    Task 4 evaluation results:
+    Program solution_v1.py solved 2 out of 2 pairs. Score: 1.00
+    Program solution_v2.py solved 2 out of 2 pairs. Score: 1.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 5 as version 1: Candidate_programs\task_5\solution_v1.py
+    Saved program for task 5 as version 2: Candidate_programs\task_5\solution_v2.py
+    Task 5 evaluation results:
+    Program solution_v1.py solved 3 out of 3 pairs. Score: 1.00
+    Program solution_v2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 6 as version 1: Candidate_programs\task_6\solution_v1.py
+    Saved program for task 6 as version 2: Candidate_programs\task_6\solution_v2.py
+    Task 6 evaluation results:
+    Program solution_v1.py solved 3 out of 3 pairs. Score: 1.00
+    Program solution_v2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 7 as version 1: Candidate_programs\task_7\solution_v1.py
+    Saved program for task 7 as version 2: Candidate_programs\task_7\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 7 as version 3: Candidate_programs\task_7\solution_v3.py
+    Revising solution_v2.py...
+    Saved program for task 7 as version 4: Candidate_programs\task_7\solution_v4.py
+    Task 7 evaluation results:
+    Program solution_v1.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v2.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v3.py solved 0 out of 3 pairs. Score: 0.00
+    Program solution_v4.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 8 as version 1: Candidate_programs\task_8\solution_v1.py
+    Saved program for task 8 as version 2: Candidate_programs\task_8\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 8 as version 3: Candidate_programs\task_8\solution_v3.py
+    Revising solution_v2.py...
+    Saved program for task 8 as version 4: Candidate_programs\task_8\solution_v4.py
+    Task 8 evaluation results:
+    Program solution_v1.py solved 2 out of 4 pairs. Score: 0.50
+    Program solution_v2.py solved 0 out of 4 pairs. Score: 0.00
+    Program solution_v3.py solved 0 out of 4 pairs. Score: 0.00
+    Program solution_v4.py solved 2 out of 4 pairs. Score: 0.50
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 9 as version 1: Candidate_programs\task_9\solution_v1.py
+    Saved program for task 9 as version 2: Candidate_programs\task_9\solution_v2.py
+    Task 9 evaluation results:
+    Program solution_v1.py solved 4 out of 4 pairs. Score: 1.00
+    Program solution_v2.py solved 4 out of 4 pairs. Score: 1.00
+    ==================================================
+    Built tailored prompt.
+    Saved program for task 10 as version 1: Candidate_programs\task_10\solution_v1.py
+    Saved program for task 10 as version 2: Candidate_programs\task_10\solution_v2.py
+    Revising solution_v2.py...
+    Saved program for task 10 as version 3: Candidate_programs\task_10\solution_v3.py
+    Task 10 evaluation results:
+    Program solution_v1.py solved 4 out of 4 pairs. Score: 1.00
+    Program solution_v2.py solved 0 out of 4 pairs. Score: 0.00
+    Program solution_v3.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+
+---
+
+**Manual evaluation on the programs performance on the 10 tasks test inputs:**
+
+---
+
+Task 1: 
+- Program 1: Incorrect
+- Program 2: Incorrect
+- Revised Program 1: Incorrect
+- Revised Program 2: Incorrect
+
+Task 2: 
+- Program 1: Incorrect
+- Program 2: Incorrect
+- Revised Program 1: Incorrect
+- Revised Program 2: Incorrect
+
+Task 3: 
+- Program 1: Incorrect
+- Program 2: Incorrect
+- Revised Program 1: Incorrect
+- Revised Program 2: Incorrect
+
+Task 4: 
+- **Program 1: Correct**
+- **Program 2: Correct**
+
+Task 5: 
+- **Program 1: Correct**
+- **Program 2: Correct**
+
+Task 6: 
+- Program 1: Incorrect
+- Program 2: Incorrect (Very close though)
+
+Task 7: 
+- Program 1: Incorrect
+- Program 2: Incorrect
+- Revised Program 1: Incorrect
+- Revised Program 2: Incorrect
+
+Task 8: 
+- Program 1: Incorrect
+- Program 2: Incorrect
+- Revised Program 1: Incorrect
+- Revised Program 2: Incorrect
+
+Task 9: 
+- Program 1: Incorrect
+- Program 2: Incorrect
+
+Task 10: 
+- Program 1: Incorrect
+- Program 2: Incorrect
+- Revised Program 2: Incorrect
+
+**Score: 2/10 or 20%** 
+
+
+*Note: Task 8 before:
+
+    def solve(grid):
+        R, C = len(grid), len(grid[0])
+        cols = [c for c in range(C) if grid[-1][c] != 0]
+        for c in cols:
+            val = None
+            for r in range(R-1, -1, -1):
+                if grid[r][c] != 0:
+                    val = grid[r][c]
+                elif val is not None:
+                    grid[r][c] = val
+        return grid
+
+---
+---
+
+# 05.04
+
+## Additions:
+Implemented the the determination and selection of the two best performing programs for each task. 
+
+- The programs (2-4) are sorted based on their score on the demonstration pairs.
+- The path to the two best performing programs is returned.
+- These two programs are then loaded and each generate a prediction for each of the tasks test inputs.
+- The generated predictions are saved in a dict and subsequently in a .json file holding all solved tasks predictions.
+
+This includes the following two functions:
+- get_best_programs: Gets the two best performing programs for the task.
+- generate_test_predictions: Generates the predictions for the tasks test inputs and saves them in a submissions dict.

@@ -3,25 +3,24 @@ def solve(grid):
     if not grid or not grid[0]:
         return grid
     h, w = len(grid), len(grid[0])
-    key = {9,6,7,4}
+    key = {9, 6, 7, 4}
     visited = [[False]*w for _ in range(h)]
     best = None
     best_count = 0
     for r in range(h):
         for c in range(w):
             if not visited[r][c] and grid[r][c] in key:
-                q = deque()
-                q.append((r,c))
+                q = deque([(r, c)])
                 visited[r][c] = True
                 comp = []
                 while q:
                     rr, cc = q.popleft()
-                    comp.append((rr,cc))
-                    for dr,dc in [(1,0),(-1,0),(0,1),(0,-1)]:
-                        nr,nc = rr+dr, cc+dc
+                    comp.append((rr, cc))
+                    for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        nr, nc = rr+dr, cc+dc
                         if 0 <= nr < h and 0 <= nc < w and not visited[nr][nc] and grid[nr][nc] in key:
                             visited[nr][nc] = True
-                            q.append((nr,nc))
+                            q.append((nr, nc))
                 if len(comp) > best_count:
                     best_count = len(comp)
                     minr = min(rp for rp, cp in comp)
@@ -32,4 +31,6 @@ def solve(grid):
     if best is None:
         return grid
     minr, maxr, minc, maxc = best
-    return [ row[minc:maxc+1] for row in grid[minr:maxr+1] ]
+    if maxr - minr < 2 or maxc - minc < 2:
+        return []
+    return [row[minc+1:maxc] for row in grid[minr+1:maxr]]
