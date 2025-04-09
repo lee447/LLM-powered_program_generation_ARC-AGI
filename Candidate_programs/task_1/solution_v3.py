@@ -1,37 +1,51 @@
+from collections import Counter
 def solve(grid):
-    from collections import deque, Counter
-    h, w = len(grid), len(grid[0])
-    out = [[0]*w for _ in range(h)]
-    used = [[False]*w for _ in range(h)]
-    dirs = [(1,0),(-1,0),(0,1),(0,-1)]
-    for r in range(h):
-        for c in range(w):
-            if grid[r][c] and not used[r][c]:
-                q = deque()
-                q.append((r,c))
-                cluster = []
-                while q:
-                    rr, cc = q.popleft()
-                    if used[rr][cc]:
-                        continue
-                    if grid[rr][cc] == 0:
-                        continue
-                    used[rr][cc] = True
-                    cluster.append((rr,cc))
-                    for dr,dc in dirs:
-                        nr, nc = rr+dr, cc+dc
-                        if 0<=nr<h and 0<=nc<w and not used[nr][nc] and grid[nr][nc]:
-                            q.append((nr,nc))
-                if len(cluster) < 2:
-                    continue
-                colvals = {}
-                for rr, cc in cluster:
-                    colvals.setdefault(cc, []).append(grid[rr][cc])
-                col_modes = {}
-                for col in colvals:
-                    cnt = Counter(colvals[col])
-                    m = min(k for k,v in cnt.items() if v==max(cnt.values()))
-                    col_modes[col] = m
-                for rr, cc in cluster:
-                    out[rr][cc] = col_modes[cc]
+    n = len(grid)
+    if n == 0:
+        return grid
+    m = len(grid[0])
+    out = [row[:] for row in grid]
+    thresh = 5
+    for i in range(n):
+        if sum(1 for x in out[i] if x) < thresh:
+            out[i] = [0]*m
+    groups = []
+    i = 0
+    while i < n:
+        if all(x == 0 for x in out[i]):
+            j = i
+            while j < n and all(x == 0 for x in out[j]):
+                j += 1
+            groups.append((0, list(range(i, j))))
+            i = j
+        else:
+            j = i + 1
+            indices = [i]
+            while j < n and any(x for x in out[j]):
+                diff = sum(1 for a, b in zip(out[j], out[j-1]) if a != b)
+                if diff <= 0.25 * m:
+                    indices.append(j)
+                    j += 1
+                else:
+                    break
+            groups.append((1, indices))
+            i = j
+    for typ, rows in groups:
+        if typ == 1:
+            if len(rows) > 1:
+                agg = []
+                for col in range(m):
+                    vals = [out[r][col] for r in rows]
+                    cnt = Counter(vals)
+                    maxfreq = max(cnt.values())
+                    cands = [v for v in cnt if cnt[v] == maxfreq]
+                    agg.append(min(cands))
+                for r in rows:
+                    out[r] = agg[:]
+            for r in rows:
+                newrow = out[r][:]
+                for col in range(1, m-1):
+                    if newrow[col] and newrow[col] != newrow[col-1] and newrow[col] != newrow[col+1] and newrow[col-1] == newrow[col+1]:
+                        newrow[col] = newrow[col-1]
+                out[r] = newrow
     return out

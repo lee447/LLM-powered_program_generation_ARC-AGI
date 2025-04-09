@@ -462,3 +462,231 @@ Implemented the the determination and selection of the two best performing progr
 This includes the following two functions:
 - get_best_programs: Gets the two best performing programs for the task.
 - generate_test_predictions: Generates the predictions for the tasks test inputs and saves them in a submissions dict.
+
+## Current iteration of prompts (examples from task 1 in Evaluation_set):
+
+**Keep in mind, that the system prompt containing role information, etc., is also passed to the LLM. Here the actual contents of the demonstration pairs has been replaced by "...", since they take a lot of space**
+
+Secondary Prompt 1:
+
+    List visual observations from the training pairs.
+
+    - Use bullet points (max 10).
+    - Focus on colors, shapes, object counts, positions, and differences.
+    - Avoid reasoning or explanations.
+    - Be concise. No full sentences, no extra formatting.
+
+    Here are the demonstration pairs (JSON data):
+
+    Train Input 1: ...
+    Train Output 1: ...
+
+    Train Input 2: ...
+    Train Output 2: ...
+
+    Train Input 3: ...
+    Train Output 3: ...
+
+---
+
+Secondary Prompt 2:
+
+    Describe the transformation(s) from input to output grids.
+
+    - Use 3 to 5 short sentences.
+    - Focus on what changes: movement, color, shape, duplication, etc.
+    - Mention if the transformation is based on position, context, or rules.
+    - Avoid implementation hints or code.
+
+    Here are visual observations of the task at hand, that may assist you in identifying the transformation:
+
+    - Black (0) used as background in all grids.
+    - Train Input 1 shows contiguous blocks of pink (6), green (3), and light blue (8).
+    - Rectangular and stripe‐like arrangements in Train Input 1.
+    - Train Input 2 features clusters with blue (1), red (2), green (3), and light blue (8) in repeating sequences.
+    - Horizontal and vertical regularity in object placement in Train Input 2.
+    - Train Input 3 contains blocks of red (2) and green (3) with occasional blue (1) elements.
+    - Several shapes form clearly defined, repeated patterns across rows.
+    - Output grids simplify and extend contiguous color regions while erasing isolated markings.
+    - Objects generally appear in organized, symmetric arrangements.
+    - Consistent removal of non‐object pixels to emphasize core patterns.
+
+    Now provide your transformation analysis based on these observations.
+
+    Here are the demonstration pairs (JSON data):
+
+    Train Input 1: ...
+    Train Output 1: ...
+
+    Train Input 2: ...
+    Train Output 2: ...
+
+    Train Input 3: ...
+    Train Output 3: ...
+
+---
+
+Secondary Prompt 3:
+
+    Reflect on how you would solve the task in Python.
+
+    - Use 3 to 5 sentences.
+    - Mention your overall approach, logical steps, and possible uncertainties.
+    - Do not return code or pseudocode.
+
+    Here are visual observations of the task that may help inform your implementation:
+    - Black (0) used as background in all grids.
+    - Train Input 1 shows contiguous blocks of pink (6), green (3), and light blue (8).
+    - Rectangular and stripe‐like arrangements in Train Input 1.
+    - Train Input 2 features clusters with blue (1), red (2), green (3), and light blue (8) in repeating sequences.
+    - Horizontal and vertical regularity in object placement in Train Input 2.
+    - Train Input 3 contains blocks of red (2) and green (3) with occasional blue (1) elements.
+    - Several shapes form clearly defined, repeated patterns across rows.
+    - Output grids simplify and extend contiguous color regions while erasing isolated markings.
+    - Objects generally appear in organized, symmetric arrangements.
+    - Consistent removal of non‐object pixels to emphasize core patterns.
+
+    Here are the transformation rules that have been identified based on the task:
+    The transformation first identifies regions of contiguous non‐background colors and discards isolated or stray pixels. It then simplifies these regions by extending them into uniform, rectangular blocks with consistent color filling, resulting in symmetric and regularly positioned patterns. The output retains the central, repeated color structures while the background remains black, emphasizing the core design. Overall, the process is based on spatial connectivity and regularity in the arrangement of color blocks.
+
+    Now reflect on how you would implement a solution to this task in Python, following the instructions above.
+
+    Here are the demonstration pairs (JSON data):
+
+    Train Input 1: ...
+    Train Output 1: ...
+
+    Train Input 2: ...
+    Train Output 2: ...
+
+    Train Input 3: ...
+    Train Output 3: ...
+
+---
+
+Task-tailored Prompt:
+
+    Implementation Reflection:
+    I would begin by scanning the input grid to identify contiguous regions of non‑background pixels using a flood-fill or connected component analysis. Once identified, I would compute the bounding box for each component and filter out any regions that are too isolated or small to be considered objects. For retained regions, I would extend the boundaries to form clean rectangular blocks and fill them uniformly with the corresponding color, ensuring that the symmetric and regular patterns emerge. One uncertainty is tuning the thresholds for what counts as an “object” versus stray pixels and handling edge cases where the contiguous region might not form a neatly defined rectangle.
+
+    Write a Python function that correctly transforms each input grid into its corresponding output grid based on the given examples.
+
+    - The function must be named: `solve(grid: List[List[int]]) -> List[List[int]]`
+    - Include only the code and necessary imports (e.g., `import numpy as np`)
+    - Do not include comments, explanations, or print statements
+    - Do not hard-code values or specific grid sizes — the function must generalize based on the patterns in the examples
+    - Ensure your solution works for all provided input-output pairs
+
+    Here are the demonstration pairs (JSON data):
+
+    Train Input 1: ...
+    Train Output 1: ...
+
+    Train Input 2: ...
+    Train Output 2: ...
+
+    Train Input 3: ...
+    Train Output 3: ...
+
+=> To save tokens only the reflection of the code implementation (response to secondary prompt 3), was added to the task-tailored prompt for now. Later on effectivity will be checked, if all information (secondary prompt 1-3) is added to the task-tailored prompt.
+
+---
+
+Revision Prompt:
+
+    In the following you'll receive a Python function that attempted to solve the following task. It did'nt succeed and you are tasked with fixing it.
+
+    - The function must be named: `solve(grid: List[List[int]]) -> List[List[int]]`
+    - Include only the code and necessary imports (e.g., `import numpy as np`)
+    - Do not include comments, explanations, or print statements
+    - Do not hard-code values or specific grid sizes — the function must generalize based on the patterns in the examples
+    - Ensure your solution works for all provided input-output pairs
+
+
+    Here is the generated code:
+    def solve(grid):
+        from collections import Counter
+        h = len(grid)
+        if h == 0:
+            return grid
+        w = len(grid[0])
+        out = [row[:] for row in grid]
+        # determine contiguous groups of rows that are “non‐empty”
+        groups = []
+        i = 0
+        while i < h:
+            if any(val != 0 for val in grid[i]):
+                start = i
+                while i < h and any(val != 0 for val in grid[i]):
+                    i += 1
+                groups.append(list(range(start, i)))
+            else:
+                i += 1
+        # for each group, process column segments where at least one row has a nonzero
+        for group in groups:
+            # create a boolean mask for columns in group
+            colmask = [False]*w
+            for j in range(w):
+                for r in group:
+                    if grid[r][j] != 0:
+                        colmask[j] = True
+                        break
+            # find contiguous segments in colmask
+            segs = []
+            j = 0
+            while j < w:
+                if colmask[j]:
+                    start = j
+                    while j < w and colmask[j]:
+                        j += 1
+                    segs.append((start, j-1))
+                else:
+                    j += 1
+            # for each segment, update the rows column‐by‐column
+            for seg in segs:
+                s, e = seg
+                # for the top row of the group, take the mode of its nonzero values in the segment
+                top_vals = [grid[group[0]][j] for j in range(s, e+1) if grid[group[0]][j] != 0]
+                if top_vals:
+                    top_mode = Counter(top_vals).most_common(1)[0][0]
+                else:
+                    top_mode = 0
+                # For top row, if the entire segment has a mode different from a mixed pattern, force it uniform.
+                out[group[0]] = out[group[0]][:1] + out[group[0]][1:]
+                for j in range(s, e+1):
+                    out[group[0]][j] = top_mode
+                # For each subsequent row in the group, update column j if that row is nonzero in that column.
+                for r in group[1:]:
+                    for j in range(s, e+1):
+                        if grid[r][j] != 0:
+                            # collect all nonzero values in column j for rows in group excluding the top row
+                            vals = [grid[r2][j] for r2 in group[1:] if grid[r2][j] != 0]
+                            if vals:
+                                mode_val = Counter(vals).most_common(1)[0][0]
+                            else:
+                                mode_val = grid[r][j]
+                            out[r][j] = mode_val
+        return out
+
+
+    if __name__ == '__main__':
+        import sys, json
+        data = sys.stdin.read().strip()
+        if not data:
+            exit(0)
+        arr = json.loads(data)
+        res = solve(arr)
+        sys.stdout.write(json.dumps(res))
+
+    Demonstration Pairs:
+    1. Input: ...
+    Expected Output: ...
+    Generated Output: ...
+    2. Input: ...
+    Expected Output: ...
+    Generated Output: ...
+    3. Input: ...
+    Expected Output: ...
+    Generated Output: ...
+
+    Please revise the code.
