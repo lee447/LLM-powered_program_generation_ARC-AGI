@@ -3,8 +3,8 @@ import random
 import shutil
 
 # Paths
-source_folder = "ARC_Data/evaluation"
-target_folder = "Evaluation_set"  # Now at the same level as ARC_Data
+source_folder = "ARC_Data/training"
+target_folder = "Evaluation_set_2"  # Now at the same level as ARC_Data
 
 # Ensure target folder exists
 os.makedirs(target_folder, exist_ok=True)

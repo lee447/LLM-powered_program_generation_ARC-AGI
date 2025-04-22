@@ -1,60 +1,61 @@
-import sys
-from collections import Counter
-
 def solve(grid):
-    n = len(grid)
-    if n==0:
-        return grid
-    m = len(grid[0])
-    # make a copy
-    out = [row[:] for row in grid]
-    # threshold: if a row has fewer than 3 non‐zero cells it is considered “noise” and cleared.
-    thresh = 3
-    # Pre‐clean individual rows: if a row has nonzero count < thresh then clear it.
-    for i in range(n):
-        cnt = sum(1 for x in out[i] if x)
-        if cnt < thresh:
-            out[i] = [0]*m
-    # Now group consecutive rows that are either all zeros or not.
-    groups = []
+    H = len(grid)
+    W = len(grid[0])
+    row_nz = [sum(1 for v in row if v != 0) for row in grid]
+    thresh_row = W // 4
+    row_mask = [c > thresh_row for c in row_nz]
+    row_segs = []
     i = 0
-    while i < n:
-        typ = 0 if all(x==0 for x in out[i]) else 1
-        j = i
-        while j < n:
-            curtype = 0 if all(x==0 for x in out[j]) else 1
-            if curtype!=typ:
-                break
+    while i < H:
+        if row_mask[i]:
+            s = i
+            while i < H and row_mask[i]:
+                i += 1
+            row_segs.append((s, i - s))
+        else:
+            i += 1
+    counts = {}
+    for _, l in row_segs:
+        counts[l] = counts.get(l, 0) + 1
+    B = max(counts, key=lambda x: counts[x])
+    row_segs = [(s, l) for s, l in row_segs if l == B]
+    col_nz = [sum(1 for r in range(H) if grid[r][c] != 0) for c in range(W)]
+    thresh_col = H // 4
+    col_mask = [c > thresh_col for c in col_nz]
+    col_segs = []
+    j = 0
+    while j < W:
+        if col_mask[j]:
+            s = j
+            while j < W and col_mask[j]:
+                j += 1
+            col_segs.append((s, j - s))
+        else:
             j += 1
-        groups.append((typ, list(range(i,j))))
-        i = j
-    # For groups of type 1 (nonzero rows), compute column‐wise “mode” among the rows in the group.
-    # In case of tie, choose the smallest nonzero. If no nonzero value appears in a column, set 0.
-    for typ, rows in groups:
-        if typ==1:
-            agg = [0]*m
-            for col in range(m):
-                vals = [out[r][col] for r in rows]
-                # consider only nonzero values
-                nz = [v for v in vals if v]
-                if nz:
-                    cnt = Counter(nz)
-                    maxfreq = max(cnt.values())
-                    # among those with maxfreq pick smallest value
-                    cand = [v for v in cnt if cnt[v]==maxfreq]
-                    agg[col] = min(cand)
-                else:
-                    agg[col] = 0
-            # assign aggregated row to every row in the group
-            for r in rows:
-                out[r] = agg[:]
+    counts = {}
+    for _, l in col_segs:
+        counts[l] = counts.get(l, 0) + 1
+    C = max(counts, key=lambda x: counts[x])
+    col_segs = [(s, l) for s, l in col_segs if l == C]
+    pattern = [[0] * C for _ in range(B)]
+    for dr in range(B):
+        for dc in range(C):
+            cnts = {}
+            for rs, _ in row_segs:
+                for cs, _ in col_segs:
+                    v = grid[rs + dr][cs + dc]
+                    cnts[v] = cnts.get(v, 0) + 1
+            bestv = None
+            bestc = -1
+            for v, c in cnts.items():
+                if c > bestc or (c == bestc and (bestv is None or v < bestv)):
+                    bestv = v
+                    bestc = c
+            pattern[dr][dc] = bestv
+    out = [[0] * W for _ in range(H)]
+    for rs, _ in row_segs:
+        for cs, _ in col_segs:
+            for dr in range(B):
+                for dc in range(C):
+                    out[rs + dr][cs + dc] = pattern[dr][dc]
     return out
-
-if __name__=="__main__":
-    data = sys.stdin.read().strip()
-    if not data:
-        exit(0)
-    import json
-    grid = json.loads(data)
-    res = solve(grid)
-    sys.stdout.write(json.dumps(res))
