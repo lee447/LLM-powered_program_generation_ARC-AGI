@@ -2804,3 +2804,401 @@ Time:
     The basic program generation took about 1h 26minutes for solving the 10 tasks.
 
 Again, here the basic program generation could be optimized by stopping the generation progress for a task, that already has two solutions solving all of the tasks demonstration pairs.
+
+
+---
+
+Test of revision loop with the first 10 tasks of the Evaluation_set to check if theres improvements as well. Here this approach also scored 70% accuracy using OpenAIs o4-mini:
+
+    Built tailored prompt.
+    Saved program for task 1 as version 1: Candidate_programs\task_1\solution_v1.py
+    Saved program for task 1 as version 2: Candidate_programs\task_1\solution_v2.py
+    Revising solution_v2.py...
+    Saved program for task 1 as version 3_rev1: Candidate_programs\task_1\solution_v3_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 1 as version 4_rev2: Candidate_programs\task_1\solution_v4_rev2.py
+    Task 0607ce86 (1) evaluation results:
+    Program solution_v1.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v3_rev1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v4_rev2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_1\solution_v1.py
+    Best program: Candidate_programs\task_1\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 2 as version 1: Candidate_programs\task_2\solution_v1.py
+    Saved program for task 2 as version 2: Candidate_programs\task_2\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 2 as version 3_rev1: Candidate_programs\task_2\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 2 as version 4_rev1: Candidate_programs\task_2\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 2 as version 5_rev2: Candidate_programs\task_2\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 2 as version 6_rev2: Candidate_programs\task_2\solution_v6_rev2.py
+    Task 0934a4d8 (2) evaluation results:
+    Program solution_v1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v3_rev1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v4_rev1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v5_rev2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v6_rev2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_2\solution_v1.py
+    Best program: Candidate_programs\task_2\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 3 as version 1: Candidate_programs\task_3\solution_v1.py
+    Saved program for task 3 as version 2: Candidate_programs\task_3\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 3 as version 3_rev1: Candidate_programs\task_3\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 3 as version 4_rev1: Candidate_programs\task_3\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 3 as version 5_rev2: Candidate_programs\task_3\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 3 as version 6_rev2: Candidate_programs\task_3\solution_v6_rev2.py
+    Task 09c534e7 (3) evaluation results:
+    Program solution_v1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v3_rev1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v4_rev1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v5_rev2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v6_rev2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_3\solution_v1.py
+    Best program: Candidate_programs\task_3\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 4 as version 1: Candidate_programs\task_4\solution_v1.py
+    Saved program for task 4 as version 2: Candidate_programs\task_4\solution_v2.py
+    Task 0b17323b (4) evaluation results:
+    Program solution_v1.py solved 2 out of 2 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 2 out of 2 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_4\solution_v1.py
+    Best program: Candidate_programs\task_4\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 5 as version 1: Candidate_programs\task_5\solution_v1.py
+    Saved program for task 5 as version 2: Candidate_programs\task_5\solution_v2.py
+    Task 0c786b71 (5) evaluation results:
+    Program solution_v1.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_5\solution_v1.py
+    Best program: Candidate_programs\task_5\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 6 as version 1: Candidate_programs\task_6\solution_v1.py
+    Saved program for task 6 as version 2: Candidate_programs\task_6\solution_v2.py
+    Task 137f0df0 (6) evaluation results:
+    Program solution_v1.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_6\solution_v1.py
+    Best program: Candidate_programs\task_6\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 7 as version 1: Candidate_programs\task_7\solution_v1.py
+    Saved program for task 7 as version 2: Candidate_programs\task_7\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 7 as version 3_rev1: Candidate_programs\task_7\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 7 as version 4_rev1: Candidate_programs\task_7\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 7 as version 5_rev2: Candidate_programs\task_7\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 7 as version 6_rev2: Candidate_programs\task_7\solution_v6_rev2.py
+    Task 15113be4 (7) evaluation results:
+    Program solution_v1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v3_rev1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v4_rev1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v5_rev2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v6_rev2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_7\solution_v1.py
+    Best program: Candidate_programs\task_7\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 8 as version 1: Candidate_programs\task_8\solution_v1.py
+    Saved program for task 8 as version 2: Candidate_programs\task_8\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 8 as version 3_rev1: Candidate_programs\task_8\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 8 as version 4_rev1: Candidate_programs\task_8\solution_v4_rev1.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 8 as version 5_rev2: Candidate_programs\task_8\solution_v5_rev2.py
+    Task 17b80ad2 (8) evaluation results:
+    Program solution_v1.py solved 2 out of 4 pairs. Score: 0.50
+    ==================================================
+    Program solution_v2.py solved 3 out of 4 pairs. Score: 0.75
+    ==================================================
+    Program solution_v3_rev1.py solved 4 out of 4 pairs. Score: 1.00
+    ==================================================
+    Program solution_v4_rev1.py solved 3 out of 4 pairs. Score: 0.75
+    ==================================================
+    Program solution_v5_rev2.py solved 3 out of 4 pairs. Score: 0.75
+    ==================================================
+    Best program: Candidate_programs\task_8\solution_v3_rev1.py
+    Best program: Candidate_programs\task_8\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 9 as version 1: Candidate_programs\task_9\solution_v1.py
+    Saved program for task 9 as version 2: Candidate_programs\task_9\solution_v2.py
+    Task 17cae0c1 (9) evaluation results:
+    Program solution_v1.py solved 4 out of 4 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 4 out of 4 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_9\solution_v1.py
+    Best program: Candidate_programs\task_9\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 10 as version 1: Candidate_programs\task_10\solution_v1.py
+    Saved program for task 10 as version 2: Candidate_programs\task_10\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 10 as version 3_rev1: Candidate_programs\task_10\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 10 as version 4_rev1: Candidate_programs\task_10\solution_v4_rev1.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 10 as version 5_rev2: Candidate_programs\task_10\solution_v5_rev2.py
+    Task 1c56ad9f (10) evaluation results:
+    Program solution_v1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v2.py solved 2 out of 4 pairs. Score: 0.50
+    ==================================================
+    Program solution_v3_rev1.py solved 4 out of 4 pairs. Score: 1.00
+    ==================================================
+    Program solution_v4_rev1.py solved 2 out of 4 pairs. Score: 0.50
+    ==================================================
+    Program solution_v5_rev2.py solved 1 out of 4 pairs. Score: 0.25
+    ==================================================
+    Best program: Candidate_programs\task_10\solution_v3_rev1.py
+    Best program: Candidate_programs\task_10\solution_v2.py
+
+**70% - CHF 2.34 - 1h 16min (No encodings, only base prompt, revising the revisions)**
+
+---
+
+# 22.04
+
+## Creation of separate .ipynbs for different approaches
+
+The different files "Pipeline" (= revision-loop approach), "Pipeline_basic_prompt" (= basic one prompt program generation for comparison), and "Pipeline_w_tailored_prompts" (= task-tailored prompts approach) have been created and now save their generated programs in respective, identically named, folders for better comparison.
+
+## Addition of Encodings and Transformation description to revision loop approach
+
+It was tested if adding encodings and a description of the transformation (e.g. secondary prompt 2), improves the revision-loops accuracy. The following are the results, running the algorithm with OpenAIs o4-mini model on tasks 20-30:
+
+    Built tailored prompt.
+    Saved program for task 1 as version 1: Candidate_programs\task_1\solution_v1.py
+    Saved program for task 1 as version 2: Candidate_programs\task_1\solution_v2.py
+    Task 3b4c2228 (1) evaluation results:
+    Program solution_v1.py solved 5 out of 5 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 5 out of 5 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_1\solution_v1.py
+    Best program: Candidate_programs\task_1\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 2 as version 1: Candidate_programs\task_2\solution_v1.py
+    Saved program for task 2 as version 2: Candidate_programs\task_2\solution_v2.py
+    Task 3ee1011a (2) evaluation results:
+    Program solution_v1.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_2\solution_v1.py
+    Best program: Candidate_programs\task_2\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 3 as version 1: Candidate_programs\task_3\solution_v1.py
+    Saved program for task 3 as version 2: Candidate_programs\task_3\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 3 as version 3_rev1: Candidate_programs\task_3\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 3 as version 4_rev1: Candidate_programs\task_3\solution_v4_rev1.py
+    Deleting invalid file: solution_v3_rev1.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 3 as version 5_rev2: Candidate_programs\task_3\solution_v5_rev2.py
+    Task 42918530 (3) evaluation results:
+    Program solution_v1.py solved 1 out of 4 pairs. Score: 0.25
+    ==================================================
+    Program solution_v2.py solved 1 out of 4 pairs. Score: 0.25
+    ==================================================
+    Program solution_v4_rev1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v5_rev2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_3\solution_v1.py
+    Best program: Candidate_programs\task_3\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 4 as version 1: Candidate_programs\task_4\solution_v1.py
+    Saved program for task 4 as version 2: Candidate_programs\task_4\solution_v2.py
+    Task 4364c1c4 (4) evaluation results:
+    Program solution_v1.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_4\solution_v1.py
+    Best program: Candidate_programs\task_4\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 5 as version 1: Candidate_programs\task_5\solution_v1.py
+    Saved program for task 5 as version 2: Candidate_programs\task_5\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 5 as version 3_rev1: Candidate_programs\task_5\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 5 as version 4_rev1: Candidate_programs\task_5\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 5 as version 5_rev2: Candidate_programs\task_5\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 5 as version 6_rev2: Candidate_programs\task_5\solution_v6_rev2.py
+    Task 47996f11 (5) evaluation results:
+    Program solution_v1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v3_rev1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v4_rev1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v5_rev2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v6_rev2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_5\solution_v1.py
+    Best program: Candidate_programs\task_5\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 6 as version 1: Candidate_programs\task_6\solution_v1.py
+    Saved program for task 6 as version 2: Candidate_programs\task_6\solution_v2.py
+    Task 48f8583b (6) evaluation results:
+    Program solution_v1.py solved 6 out of 6 pairs. Score: 1.00
+    ==================================================
+    Program solution_v2.py solved 6 out of 6 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_6\solution_v1.py
+    Best program: Candidate_programs\task_6\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 7 as version 1: Candidate_programs\task_7\solution_v1.py
+    Saved program for task 7 as version 2: Candidate_programs\task_7\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 7 as version 3_rev1: Candidate_programs\task_7\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 7 as version 4_rev1: Candidate_programs\task_7\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 7 as version 5_rev2: Candidate_programs\task_7\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 7 as version 6_rev2: Candidate_programs\task_7\solution_v6_rev2.py
+    Task 4acc7107 (7) evaluation results:
+    Program solution_v1.py solved 3 out of 4 pairs. Score: 0.75
+    ==================================================
+    Program solution_v2.py solved 2 out of 4 pairs. Score: 0.50
+    ==================================================
+    Program solution_v3_rev1.py solved 3 out of 4 pairs. Score: 0.75
+    ==================================================
+    Program solution_v4_rev1.py solved 3 out of 4 pairs. Score: 0.75
+    ==================================================
+    Program solution_v5_rev2.py solved 3 out of 4 pairs. Score: 0.75
+    ==================================================
+    Program solution_v6_rev2.py solved 1 out of 4 pairs. Score: 0.25
+    ==================================================
+    Best program: Candidate_programs\task_7\solution_v1.py
+    Best program: Candidate_programs\task_7\solution_v3_rev1.py
+    Built tailored prompt.
+    Saved program for task 8 as version 1: Candidate_programs\task_8\solution_v1.py
+    Saved program for task 8 as version 2: Candidate_programs\task_8\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 8 as version 3_rev1: Candidate_programs\task_8\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 8 as version 4_rev1: Candidate_programs\task_8\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 8 as version 5_rev2: Candidate_programs\task_8\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 8 as version 6_rev2: Candidate_programs\task_8\solution_v6_rev2.py
+    Task 4e45f183 (8) evaluation results:
+    Program solution_v1.py solved 1 out of 3 pairs. Score: 0.33
+    ==================================================
+    Program solution_v2.py solved 2 out of 3 pairs. Score: 0.67
+    ==================================================
+    Program solution_v3_rev1.py solved 2 out of 3 pairs. Score: 0.67
+    ==================================================
+    Program solution_v4_rev1.py solved 1 out of 3 pairs. Score: 0.33
+    ==================================================
+    Program solution_v5_rev2.py solved 2 out of 3 pairs. Score: 0.67
+    ==================================================
+    Program solution_v6_rev2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Best program: Candidate_programs\task_8\solution_v6_rev2.py
+    Best program: Candidate_programs\task_8\solution_v2.py
+    Built tailored prompt.
+    Saved program for task 9 as version 1: Candidate_programs\task_9\solution_v1.py
+    Saved program for task 9 as version 2: Candidate_programs\task_9\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 9 as version 3_rev1: Candidate_programs\task_9\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 9 as version 4_rev1: Candidate_programs\task_9\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 9 as version 5_rev2: Candidate_programs\task_9\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 9 as version 6_rev2: Candidate_programs\task_9\solution_v6_rev2.py
+    Task 4e469f39 (9) evaluation results:
+    Program solution_v1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v3_rev1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v4_rev1.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Program solution_v5_rev2.py solved 3 out of 3 pairs. Score: 1.00
+    ==================================================
+    Program solution_v6_rev2.py solved 0 out of 3 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_9\solution_v5_rev2.py
+    Best program: Candidate_programs\task_9\solution_v1.py
+    Built tailored prompt.
+    Saved program for task 10 as version 1: Candidate_programs\task_10\solution_v1.py
+    Saved program for task 10 as version 2: Candidate_programs\task_10\solution_v2.py
+    Revising solution_v1.py...
+    Saved program for task 10 as version 3_rev1: Candidate_programs\task_10\solution_v3_rev1.py
+    Revising solution_v2.py...
+    Saved program for task 10 as version 4_rev1: Candidate_programs\task_10\solution_v4_rev1.py
+    Second revision for: solution_v3_rev1.py...
+    Saved program for task 10 as version 5_rev2: Candidate_programs\task_10\solution_v5_rev2.py
+    Second revision for: solution_v4_rev1.py...
+    Saved program for task 10 as version 6_rev2: Candidate_programs\task_10\solution_v6_rev2.py
+    Task 50f325b5 (10) evaluation results:
+    Program solution_v1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v3_rev1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v4_rev1.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v5_rev2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Program solution_v6_rev2.py solved 0 out of 4 pairs. Score: 0.00
+    ==================================================
+    Best program: Candidate_programs\task_10\solution_v1.py
+    Best program: Candidate_programs\task_10\solution_v2.py
+
+
+There is no significant improvement. The cost of this run was about CHF 5 (might be incorrect due to previous runs of other models - probably more about CHF 2.4-3). Since these show no larger improvement the following are next steps:
+
+1. Check if other encodings significantly increase the models accuracy.
+2. If not, send only the base prompt and try different approaches to improve the algorithm.

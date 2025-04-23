@@ -1,30 +1,61 @@
 def solve(grid):
-    h=len(grid); w=len(grid[0])
-    rows=[-1]+[i for i in range(h) if all(x==4 for x in grid[i])]+[h]
-    cols=[-1]+[j for j in range(w) if all(grid[i][j]==4 for i in range(h))]+[w]
-    bh=len(rows)-1; bw=len(cols)-1
-    cnt={}
-    for i in range(h):
-        for j in range(w):
-            v=grid[i][j]
-            if v not in (0,1,4):
-                cnt[v]=cnt.get(v,0)+1
-    if cnt:
-        highlight=min(cnt, key=lambda x: cnt[x])
-    else:
-        highlight=0
-    if grid[0][2]==1:
-        d=0
-    else:
-        d=bh//2
-    out=[row[:] for row in grid]
-    for bi in range(bh):
-        for bj in range(bw):
-            if bi+bj==d:
-                r0=rows[bi]+1; c0=cols[bj]+1
-                for k in (0,1):
-                    if 0<=r0+k<h and 0<=c0+k<w and grid[r0+k][c0+k]==1:
-                        out[r0+k][c0+k]=highlight
-                    if 0<=r0+k<h and 0<=c0+2-k<w and grid[r0+k][c0+2-k]==1:
-                        out[r0+k][c0+2-k]=highlight
-    return out
+    H,W=len(grid),len(grid[0])
+    visited=[[False]*W for _ in range(H)]
+    comps=[]
+    for r in range(H):
+        for c in range(W):
+            v=grid[r][c]
+            if v!=0 and not visited[r][c]:
+                stack=[(r,c)]; visited[r][c]=True; coords=[]
+                while stack:
+                    x,y=stack.pop()
+                    coords.append((x,y))
+                    for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                        nx,ny=x+dx,y+dy
+                        if 0<=nx<H and 0<=ny<W and not visited[nx][ny] and grid[nx][ny]==v:
+                            visited[nx][ny]=True
+                            stack.append((nx,ny))
+                comps.append((v,coords))
+    bycolor={}
+    for v,coords in comps:
+        bycolor.setdefault(v,[]).append(coords)
+    colors=list(bycolor.keys())
+    color_minc={}
+    for c in colors:
+        m=W
+        for comp in bycolor[c]:
+            for _,cc in comp:
+                if cc<m:m=cc
+        color_minc[c]=m
+    left= min(colors, key=lambda c: color_minc[c])
+    right= next(c for c in colors if c!=left)
+    stats={}
+    for c in (left,right):
+        cl=bycolor[c]
+        info=[]
+        for comp in cl:
+            rs=[r for r,_ in comp]; cs=[c0 for _,c0 in comp]
+            r0,r1,minc,maxc=min(rs),max(rs),min(cs),max(cs)
+            info.append((comp,r0,r1-min(rs)+1,maxc-minc+1,len(comp),minc))
+        info.sort(key=lambda x:(x[2],x[3],x[4]))
+        small,large=info[0],info[1]
+        stats[c]={'small':small,'large':large,'blockw':max(small[3],large[3])}
+    leftw=stats[left]['blockw']
+    result=[[0]*W for _ in range(H)]
+    for c,blockStart in ((left,0),(right,leftw+1)):
+        st=stats[c]
+        compS,r0S,hS,wS,aS,mincS=st['small']
+        compL,r0L,hL,wL,aL,mincL=st['large']
+        newL0=H-hL
+        newS0=newL0-hS-1
+        offS_r=newS0-r0S
+        offL_r=newL0-r0L
+        offS_c=blockStart-mincS
+        offL_c=blockStart-mincL
+        for r,c0 in compS:
+            nr, nc = r+offS_r, c0+offS_c
+            result[nr][nc]=c
+        for r,c0 in compL:
+            nr, nc = r+offL_r, c0+offL_c
+            result[nr][nc]=c
+    return result

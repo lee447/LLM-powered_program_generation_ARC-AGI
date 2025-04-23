@@ -1,52 +1,66 @@
-from typing import List
-def solve(grid: List[List[int]]) -> List[List[int]]:
-    h, w = len(grid), len(grid[0])
-    row_seps = [i for i in range(h) if all(grid[i][j] == 4 for j in range(w))]
-    col_seps = [j for j in range(w) if all(grid[i][j] == 4 for i in range(h))]
-    rows = [-1] + row_seps + [h]
-    cols = [-1] + col_seps + [w]
-    bs = rows[1] - rows[0] - 1
-    bH = len(rows) - 1
-    bW = len(cols) - 1
-    cnt = {}
-    for i in range(h):
-        for j in range(w):
-            v = grid[i][j]
-            if v not in (0, 1, 4):
-                cnt[v] = cnt.get(v, 0) + 1
-    highlight = min(cnt.items(), key=lambda x: x[1])[0] if cnt else 0
-    sum_main = 0
-    m = min(bH, bW)
-    for i in range(m):
-        r0 = rows[i] + 1
-        c0 = cols[i] + 1
-        for dr in range(bs):
-            for dc in range(bs):
-                if grid[r0 + dr][c0 + dc] == 1:
-                    sum_main += 1
-    sum_anti = 0
-    for i in range(bH):
-        j = bW - 1 - i
-        if 0 <= j < bW:
-            r0 = rows[i] + 1
-            c0 = cols[j] + 1
-            for dr in range(bs):
-                for dc in range(bs):
-                    if grid[r0 + dr][c0 + dc] == 1:
-                        sum_anti += 1
-    use_main = sum_main >= sum_anti
-    out = [row[:] for row in grid]
-    for i in range(bH):
-        j = i if use_main else bW - 1 - i
-        if not (0 <= j < bW):
-            continue
-        r0 = rows[i] + 1
-        c0 = cols[j] + 1
-        for k in range(bs // 2 + 1):
-            r1, c1 = r0 + k, c0 + k
-            if 0 <= r1 < h and 0 <= c1 < w and grid[r1][c1] == 1:
-                out[r1][c1] = highlight
-            r2, c2 = r0 + k, c0 + (bs - 1 - k)
-            if 0 <= r2 < h and 0 <= c2 < w and grid[r2][c2] == 1:
-                out[r2][c2] = highlight
-    return out
+import collections
+def solve(grid):
+    H=len(grid)
+    W=len(grid[0])
+    visited=[[False]*W for _ in range(H)]
+    comps=[]
+    for r in range(H):
+        for c in range(W):
+            v=grid[r][c]
+            if v!=0 and not visited[r][c]:
+                stack=[(r,c)]
+                visited[r][c]=True
+                coords=[]
+                while stack:
+                    x,y=stack.pop()
+                    coords.append((x,y))
+                    for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                        nx,ny=x+dx,y+dy
+                        if 0<=nx<H and 0<=ny<W and not visited[nx][ny] and grid[nx][ny]==v:
+                            visited[nx][ny]=True
+                            stack.append((nx,ny))
+                comps.append((v,coords))
+    bycolor=collections.defaultdict(list)
+    for v,coords in comps:
+        bycolor[v].append(coords)
+    color_minc={}
+    for c,cls in bycolor.items():
+        m=W
+        for comp in cls:
+            for _,cc in comp:
+                if cc<m:
+                    m=cc
+        color_minc[c]=m
+    colors=sorted(bycolor.keys(),key=lambda c:color_minc[c])
+    left,right=colors[0],colors[1]
+    stats={}
+    for c in (left,right):
+        info=[]
+        for comp in bycolor[c]:
+            rs=[r for r,_ in comp]
+            cs=[cc for _,cc in comp]
+            r0=min(rs)
+            h=max(rs)-min(rs)+1
+            w=max(cs)-min(cs)+1
+            a=len(comp)
+            m=min(cs)
+            info.append((comp,r0,h,w,a,m))
+        info.sort(key=lambda x:(x[2],x[3],x[4]))
+        small,large=info[0],info[1]
+        stats[c]={'small':small,'large':large,'blockw':max(small[3],large[3])}
+    leftw=stats[left]['blockw']
+    result=[[0]*W for _ in range(H)]
+    for c,start in ((left,0),(right,leftw+1)):
+        compS,r0S,hS,wS,aS,mS=stats[c]['small']
+        compL,r0L,hL,wL,aL,mL=stats[c]['large']
+        newL0=H-hL
+        newS0=newL0-hS-1
+        offS_r=newS0-r0S
+        offL_r=newL0-r0L
+        offS_c=start-mS
+        offL_c=start-mL
+        for r,cc in compS:
+            result[r+offS_r][cc+offS_c]=c
+        for r,cc in compL:
+            result[r+offL_r][cc+offL_c]=c
+    return result

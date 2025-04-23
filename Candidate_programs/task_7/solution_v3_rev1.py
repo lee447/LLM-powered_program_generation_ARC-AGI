@@ -1,57 +1,69 @@
-from typing import List
-
-def solve(grid: List[List[int]]) -> List[List[int]]:
-    h, w = len(grid), len(grid[0])
-    rows = [-1] + [i for i in range(h) if all(v == 4 for v in grid[i])] + [h]
-    cols = [-1] + [j for j in range(w) if all(grid[i][j] == 4 for i in range(h))] + [w]
-    bH, bW = len(rows) - 1, len(cols) - 1
-    bs = rows[1] - rows[0] - 1
-    cnt = {}
-    for i in range(h):
-        for j in range(w):
-            v = grid[i][j]
-            if v not in (0, 1, 4):
-                cnt[v] = cnt.get(v, 0) + 1
-    highlight = min(cnt, key=cnt.get) if cnt else 0
-    # measure which global diagonal has more 1's on its block-diagonal cells
-    sum_main = sum(
-        1
-        for bi in range(bH)
-        for k in range(bs)
-        if rows[bi] + 1 + k < h and cols[bi] + 1 + k < w
-        and bi < bW
-        and bi == bi
-        and grid[rows[bi] + 1 + k][cols[bi] + 1 + k] == 1
-    )
-    d_anti = bH // 2
-    sum_anti = sum(
-        1
-        for bi in range(bH)
-        for k in range(bs)
-        if 0 <= d_anti - bi < bW
-        and rows[bi] + 1 + k < h
-        and cols[d_anti - bi] + 1 + (bs - 1 - k) < w
-        and grid[rows[bi] + 1 + k][cols[d_anti - bi] + 1 + (bs - 1 - k)] == 1
-    )
-    use_main = sum_main >= sum_anti
-    out = [row[:] for row in grid]
-    for bi in range(bH):
-        for bj in range(bW):
-            if (use_main and bi == bj) or (not use_main and bi + bj == d_anti):
-                r0, c0 = rows[bi] + 1, cols[bj] + 1
-                for k in range((bs // 2) + 1):
-                    if use_main:
-                        r, c = r0 + k, c0 + k
-                        if 0 <= r < h and 0 <= c < w and grid[r][c] == 1:
-                            out[r][c] = highlight
-                        r2, c2 = r0 + k, c0 + (bs - 1 - k)
-                        if 0 <= r2 < h and 0 <= c2 < w and grid[r2][c2] == 1:
-                            out[r2][c2] = highlight
-                    else:
-                        r, c = r0 + k, c0 + (bs - 1 - k)
-                        if 0 <= r < h and 0 <= c < w and grid[r][c] == 1:
-                            out[r][c] = highlight
-                        r2, c2 = r0 + k, c0 + k
-                        if 0 <= r2 < h and 0 <= c2 < w and grid[r2][c2] == 1:
-                            out[r2][c2] = highlight
-    return out
+import collections
+def solve(grid):
+    H, W = len(grid), len(grid[0])
+    visited = [[False]*W for _ in range(H)]
+    comps = []
+    for r in range(H):
+        for c in range(W):
+            v = grid[r][c]
+            if v != 0 and not visited[r][c]:
+                stack = [(r, c)]
+                visited[r][c] = True
+                coords = []
+                while stack:
+                    x, y = stack.pop()
+                    coords.append((x, y))
+                    for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+                        nx, ny = x+dx, y+dy
+                        if 0 <= nx < H and 0 <= ny < W and not visited[nx][ny] and grid[nx][ny] == v:
+                            visited[nx][ny] = True
+                            stack.append((nx, ny))
+                comps.append((v, coords))
+    bycolor = collections.defaultdict(list)
+    for v, coords in comps:
+        bycolor[v].append(coords)
+    color_minc = {}
+    for c, cls in bycolor.items():
+        m = W
+        for comp in cls:
+            for _, cc in comp:
+                if cc < m:
+                    m = cc
+        color_minc[c] = m
+    colors = sorted(bycolor.keys(), key=lambda c: color_minc[c])
+    left, right = colors[0], colors[1]
+    stats = {}
+    for c in (left, right):
+        info = []
+        for comp in bycolor[c]:
+            rs = [r for r, _ in comp]
+            cs = [cc for _, cc in comp]
+            r0 = min(rs)
+            h = max(rs) - min(rs) + 1
+            w = max(cs) - min(cs) + 1
+            a = len(comp)
+            m = min(cs)
+            info.append((comp, r0, h, w, a, m))
+        info.sort(key=lambda x: (x[3], x[2], x[4]))
+        small, large = info[0], info[1]
+        stats[c] = {
+            'small': small,
+            'large': large,
+            'blockw': max(small[3], large[3])
+        }
+    leftw = stats[left]['blockw']
+    result = [[0]*W for _ in range(H)]
+    for c, start in ((left, 0), (right, leftw+1)):
+        compS, r0S, hS, wS, aS, mS = stats[c]['small']
+        compL, r0L, hL, wL, aL, mL = stats[c]['large']
+        newL0 = H - hL
+        newS0 = newL0 - hS - 1
+        offS_r = newS0 - r0S
+        offL_r = newL0 - r0L
+        offS_c = start - mS
+        offL_c = start - mL
+        for r, cc in compS:
+            result[r+offS_r][cc+offS_c] = c
+        for r, cc in compL:
+            result[r+offL_r][cc+offL_c] = c
+    return result

@@ -1,46 +1,19 @@
-from typing import List
-def solve(grid: List[List[int]]) -> List[List[int]]:
+def solve(grid):
     H, W = len(grid), len(grid[0])
-    orig = [row[:] for row in grid]
-    rects = []
-    for r in range(H-1):
-        for c in range(W-1):
-            if orig[r][c] == 1 and (r == 0 or orig[r-1][c] != 1) and (c == 0 or orig[r][c-1] != 1) and orig[r][c+1] == 1 and orig[r+1][c] == 1:
-                c2 = c
-                while c2+1 < W and orig[r][c2+1] == 1:
-                    c2 += 1
-                r2 = r
-                while r2+1 < H and orig[r2+1][c] == 1:
-                    r2 += 1
-                if r2 <= r+1 or c2 <= c+1:
-                    continue
-                ok = True
-                for x in range(c, c2+1):
-                    if orig[r][x] != 1 or orig[r2][x] != 1:
-                        ok = False
-                        break
-                if not ok:
-                    continue
-                for y in range(r, r2+1):
-                    if orig[y][c] != 1 or orig[y][c2] != 1:
-                        ok = False
-                        break
-                if not ok:
-                    continue
-                colors = set()
-                for i in range(r+1, r2):
-                    for j in range(c+1, c2):
-                        v = orig[i][j]
-                        if v != 0 and v != 1:
-                            colors.add(v)
-                if not colors:
-                    continue
-                color = colors.pop()
-                rects.append((r, r2, c, c2, color))
-    out = [row[:] for row in orig]
-    for r, r2, c, c2, color in rects:
-        for i in range(r+1, r2):
-            for j in range(c+1, c2):
-                if out[i][j] == 1:
-                    out[i][j] = color
+    rows = [i for i in range(H) if all(grid[i][j] == 0 for j in range(W))]
+    cols = [j for j in range(W) if all(grid[i][j] == 0 for i in range(H))]
+    block_rows = [(rows[i] + 1, rows[i+1]) for i in range(len(rows) - 1)]
+    block_cols = [(cols[j] + 1, cols[j+1]) for j in range(len(cols) - 1)]
+    nb_r, nb_c = len(block_rows), len(block_cols)
+    br_dest, br_src = block_rows[nb_r-1], block_rows[nb_r-2]
+    bc_dest, bc_src = block_cols[0], block_cols[nb_c-1]
+    bh = br_dest[1] - br_dest[0]
+    bw = bc_dest[1] - bc_dest[0]
+    color_dest = grid[br_dest[0]][bc_dest[0]]
+    mask = [[grid[br_src[0]+i][bc_src[0]+j] != 0 for j in range(1, bw-1)] for i in range(1, bh-1)]
+    out = [row[:] for row in grid]
+    for i in range(1, bh-1):
+        for j in range(1, bw-1):
+            if mask[i-1][j-1]:
+                out[br_dest[0]+i][bc_dest[0]+j] = color_dest
     return out

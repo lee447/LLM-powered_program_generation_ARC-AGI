@@ -1,39 +1,42 @@
 from typing import List
+
 def solve(grid: List[List[int]]) -> List[List[int]]:
     H, W = len(grid), len(grid[0])
+    zeros_r = {i for i in range(H) if all(x == 0 for x in grid[i])}
+    zeros_c = {j for j in range(W) if all(grid[i][j] == 0 for i in range(H))}
+    block_rows = []
+    prev = -1
+    for r in sorted(zeros_r):
+        if prev + 1 < r:
+            block_rows.append((prev + 1, r))
+        prev = r
+    if prev + 1 < H:
+        block_rows.append((prev + 1, H))
+    block_cols = []
+    prev = -1
+    for c in sorted(zeros_c):
+        if prev + 1 < c:
+            block_cols.append((prev + 1, c))
+        prev = c
+    if prev + 1 < W:
+        block_cols.append((prev + 1, W))
     out = [row[:] for row in grid]
-    visited = [[False]*W for _ in range(H)]
-    dirs = [(1,0),(-1,0),(0,1),(0,-1)]
-    for i in range(H):
-        for j in range(W):
-            if grid[i][j] != 0 and not visited[i][j]:
-                stack = [(i,j)]
-                visited[i][j] = True
-                comp = []
-                while stack:
-                    r,c = stack.pop()
-                    comp.append((r,c))
-                    for dr,dc in dirs:
-                        nr, nc = r+dr, c+dc
-                        if 0 <= nr < H and 0 <= nc < W and grid[nr][nc] != 0 and not visited[nr][nc]:
-                            visited[nr][nc] = True
-                            stack.append((nr,nc))
-                has_marker = any(grid[r][c] > 1 for r,c in comp)
-                if not has_marker:
-                    continue
-                rs = [r for r,c in comp]
-                cs = [c for r,c in comp]
-                minr, maxr = min(rs), max(rs)
-                minc, maxc = min(cs), max(cs)
-                comp_set = set(comp)
-                for r,c in comp:
-                    color = grid[r][c]
-                    if color <= 1:
-                        continue
-                    r0 = minr + maxr - r
-                    c0 = minc + maxc - c
-                    pts = {(r,c), (r0,c0), (r0,c), (r,c0)}
-                    for x,y in pts & comp_set:
-                        if out[x][y] == 1:
-                            out[x][y] = color
+    changed = True
+    while changed:
+        changed = False
+        for r0, r1 in block_rows:
+            for c0, c1 in block_cols:
+                for r in range(r0 + 1, r1 - 1):
+                    for c in range(c0 + 1, c1 - 1):
+                        if out[r][c] == 0:
+                            left = out[r][c - 1]
+                            right = out[r][c + 1]
+                            up = out[r - 1][c]
+                            down = out[r + 1][c]
+                            if left > 0 and left == right:
+                                out[r][c] = left
+                                changed = True
+                            elif up > 0 and up == down:
+                                out[r][c] = up
+                                changed = True
     return out

@@ -1,68 +1,28 @@
 from typing import List
-from collections import deque
-
 def solve(grid: List[List[int]]) -> List[List[int]]:
     H, W = len(grid), len(grid[0])
-    orig = grid
-    out = [row[:] for row in orig]
-    visited = [[False]*W for _ in range(H)]
-    comps = []
-    for i in range(H):
-        for j in range(W):
-            v = orig[i][j]
-            if v > 1 and not visited[i][j]:
-                dq = deque([(i, j)])
-                visited[i][j] = True
-                cells = [(i, j)]
-                while dq:
-                    r, c = dq.popleft()
-                    for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)):
-                        nr, nc = r+dr, c+dc
-                        if 0 <= nr < H and 0 <= nc < W and not visited[nr][nc] and orig[nr][nc] == v:
-                            visited[nr][nc] = True
-                            dq.append((nr, nc))
-                            cells.append((nr, nc))
-                rs = [r for r, c in cells]
-                cs = [c for r, c in cells]
-                minR, maxR, minC, maxC = min(rs), max(rs), min(cs), max(cs)
-                area = (maxR-minR)*(maxC-minC)
-                comps.append((area, v, minR, maxR, minC, maxC))
-    comps.sort()
-    for _, v, minR, maxR, minC, maxC in comps:
-        c1 = None
-        for c in range(minC-1, -1, -1):
-            if all(orig[r][c] == 1 for r in range(minR, maxR+1)):
-                c1 = c
-                break
-        if c1 is None:
+    rows_zero = [i for i in range(H) if all(grid[i][j] == 0 for j in range(W))]
+    cols_zero = [j for j in range(W) if all(grid[i][j] == 0 for i in range(H))]
+    block_rows = [(rows_zero[i] + 1, rows_zero[i+1]) for i in range(len(rows_zero) - 1)]
+    block_cols = [(cols_zero[j] + 1, cols_zero[j+1]) for j in range(len(cols_zero) - 1)]
+    out = [row[:] for row in grid]
+    if len(block_rows) < 2:
+        return out
+    for bc in block_cols:
+        br_src = block_rows[-1]
+        r0, r1 = br_src
+        c0, c1 = bc
+        interior_rows = range(r0+1, r1-1)
+        interior_cols = range(c0+1, c1-1)
+        mask = [[grid[r][c] != 0 for c in interior_cols] for r in interior_rows]
+        if not any(any(row) for row in mask):
             continue
-        c2 = None
-        for c in range(maxC+1, W):
-            if all(orig[r][c] == 1 for r in range(minR, maxR+1)):
-                c2 = c
-                break
-        if c2 is None:
-            continue
-        r1 = None
-        for r in range(minR-1, -1, -1):
-            if all(orig[r][c] == 1 for c in range(c1, c2+1)):
-                r1 = r
-                break
-        if r1 is None:
-            continue
-        r2 = None
-        for r in range(maxR+1, H):
-            if all(orig[r][c] == 1 for c in range(c1, c2+1)):
-                r2 = r
-                break
-        if r2 is None:
-            continue
-        if not all(orig[r1][c] == 1 and orig[r2][c] == 1 for c in range(c1, c2+1)):
-            continue
-        if not all(orig[r][c1] == 1 and orig[r][c2] == 1 for r in range(r1, r2+1)):
-            continue
-        for r in range(r1+1, r2):
-            for c in range(c1+1, c2):
-                if out[r][c] == 1:
-                    out[r][c] = v
+        br_dst = block_rows[-2]
+        dr0, dr1 = br_dst
+        dc0, dc1 = bc
+        color = grid[dr0][dc0]
+        for i, r in enumerate(range(dr0+1, dr1-1)):
+            for j, c in enumerate(interior_cols):
+                if mask[i][j] and out[r][c] == 0:
+                    out[r][c] = color
     return out
