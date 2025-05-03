@@ -1,41 +1,23 @@
-from typing import List
-
-def solve(grid: List[List[int]]) -> List[List[int]]:
-    H, W = len(grid), len(grid[0])
-    row_divs = [r for r in range(H) if all(grid[r][c] == 4 for c in range(W))]
-    col_divs = [c for c in range(W) if all(grid[r][c] == 4 for r in range(H))]
-    row_divs.sort()
-    col_divs.sort()
-    row_segs = []
-    prev = -1
-    for d in row_divs:
-        if d - prev - 1 > 0:
-            row_segs.append((prev + 1, d - 1))
-        prev = d
-    if H - prev - 1 > 0:
-        row_segs.append((prev + 1, H - 1))
-    col_segs = []
-    prev = -1
-    for d in col_divs:
-        if d - prev - 1 > 0:
-            col_segs.append((prev + 1, d - 1))
-        prev = d
-    if W - prev - 1 > 0:
-        col_segs.append((prev + 1, W - 1))
-    r0, r1 = row_segs[0]
-    c0, c1 = col_segs[0]
-    X = None
-    offsets = []
-    for r in range(r0, r1 + 1):
-        for c in range(c0, c1 + 1):
-            v = grid[r][c]
+def solve(grid):
+    rows, cols = len(grid), len(grid[0])
+    sep_rows = [r for r in range(rows) if all(grid[r][c] == 4 for c in range(cols))]
+    sep_cols = [c for c in range(cols) if all(grid[r][c] == 4 for r in range(rows))]
+    h = sep_rows[1] - sep_rows[0] - 1
+    w = sep_cols[1] - sep_cols[0] - 1
+    r0, c0 = sep_rows[0] + 1, sep_cols[0] + 1
+    colors = set()
+    for dr in range(h):
+        for dc in range(w):
+            v = grid[r0 + dr][c0 + dc]
             if v not in (0, 1, 4):
-                X = v
-                offsets.append((r - r0, c - c0))
-    out = [row[:] for row in grid]
-    for i in range(len(row_segs)):
-        rs, _ = row_segs[i]
-        cs, _ = col_segs[i]
-        for dr, dc in offsets:
-            out[rs + dr][cs + dc] = X
-    return out
+                colors.add(v)
+    motif_color = colors.pop() if colors else None
+    motif = [(dr, dc) for dr in range(h) for dc in range(w)
+             if motif_color is not None and grid[r0 + dr][c0 + dc] == motif_color]
+    res = [row[:] for row in grid]
+    for i in range(len(sep_rows) - 1):
+        for j in range(len(sep_cols) - 1):
+            br, bc = sep_rows[i] + 1, sep_cols[j] + 1
+            for dr, dc in motif:
+                res[br + dr][bc + dc] = motif_color
+    return res

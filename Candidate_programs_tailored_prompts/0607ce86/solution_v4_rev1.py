@@ -1,38 +1,49 @@
-from collections import deque, defaultdict
-
 def solve(grid):
-    H, W = len(grid), len(grid[0])
-    visited = [[False]*W for _ in range(H)]
-    comps = []
-    for i in range(H):
-        for j in range(W):
-            if grid[i][j] != 0 and not visited[i][j]:
-                q = deque([(i,j)])
-                visited[i][j] = True
-                cells = []
-                while q:
-                    x,y = q.popleft()
-                    cells.append((x,y))
-                    for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)):
-                        nx,ny = x+dx,y+dy
-                        if 0<=nx<H and 0<=ny<W and not visited[nx][ny] and grid[nx][ny]!=0:
-                            visited[nx][ny] = True
-                            q.append((nx,ny))
-                rs = [r for r,c in cells]
-                cs = [c for r,c in cells]
-                r0,r1,c0,c1 = min(rs),max(rs),min(cs),max(cs)
-                h,w = r1-r0+1, c1-c0+1
-                if w>1 and len(cells)==h*w:
-                    comps.append((r0,c0,h,w,cells))
-    by_size = defaultdict(list)
-    y_off = defaultdict(set)
-    for r0,c0,h,w,cells in comps:
-        by_size[(h,w)].append(cells)
-        y_off[(h,w)].add(r0)
-    sizes = [sz for sz in by_size if len(y_off[sz])>1]
-    out = [[0]*W for _ in range(H)]
-    for sz in sizes:
-        for cells in by_size[sz]:
-            for r,c in cells:
-                out[r][c] = grid[r][c]
+    h, w = len(grid), len(grid[0])
+    out = [[0]*w for _ in range(h)]
+    bands = []
+    zrow = [0]*w
+    in_band = False
+    for r in range(h):
+        if not in_band and any(grid[r][c] != 0 for c in range(w)):
+            start = r
+            in_band = True
+        if in_band and all(grid[r][c] == 0 for c in range(w)):
+            bands.append((start, r-1))
+            in_band = False
+    if in_band:
+        bands.append((start, h-1))
+    for start, end in bands:
+        rows = list(range(start, end+1))
+        cnt = [0]*w
+        for c in range(w):
+            for r in rows:
+                if grid[r][c] != 0:
+                    cnt[c] += 1
+        mask = [cnt[c] > (end-start+1)/2 for c in range(w)]
+        # split mask into contiguous segments
+        segs = []
+        c = 0
+        while c < w:
+            if mask[c]:
+                j = c
+                while j < w and mask[j]:
+                    j += 1
+                segs.append(list(range(c, j)))
+                c = j
+            else:
+                c += 1
+        for seg in segs:
+            # collect rows that carry this segment
+            rows_seg = [r for r in rows if any(grid[r][c] != 0 for c in seg)]
+            # group by pattern on this segment
+            groups = {}
+            for r in rows_seg:
+                key = tuple(grid[r][c] for c in seg)
+                groups.setdefault(key, []).append(r)
+            # find majority key
+            maj_key = max(groups.items(), key=lambda x: len(x[1]))[0]
+            for r in rows_seg:
+                for i, c in enumerate(seg):
+                    out[r][c] = maj_key[i]
     return out

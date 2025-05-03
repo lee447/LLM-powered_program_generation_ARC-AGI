@@ -1,47 +1,40 @@
 def solve(grid):
-    R=len(grid); C=len(grid[0])
-    out=[row[:] for row in grid]
-    visited=[[False]*C for _ in range(R)]
-    comps=[]
-    for i in range(R):
-        for j in range(C):
-            if grid[i][j]==1 and not visited[i][j]:
-                stack=[(i,j)]; visited[i][j]=True; comp=[]
-                while stack:
-                    r,c=stack.pop()
-                    comp.append((r,c))
-                    for dr,dc in ((1,0),(-1,0),(0,1),(0,-1)):
-                        nr, nc = r+dr, c+dc
-                        if 0<=nr<R and 0<=nc<C and grid[nr][nc]==1 and not visited[nr][nc]:
-                            visited[nr][nc]=True
-                            stack.append((nr,nc))
-                comps.append(comp)
-    for comp in comps:
-        rs=[r for r,c in comp]; cs=[c for r,c in comp]
-        r0,r1,minr,maxr=min(rs),max(rs),min(rs),max(rs)
-        c0,c1,minc,maxc=min(cs),max(cs)
-        if max(rs)-min(rs)<2 or max(cs)-min(cs)<2: continue
-        rows=list(range(min(rs)+1,max(rs)))
-        cols=list(range(min(cs)+1,max(cs)))
-        h=len(rows); w=len(cols)
-        anchor=None
-        for r in rows:
-            for c in cols:
-                v=grid[r][c]
-                if v!=0 and v!=1:
-                    anchor=(r,c,v)
-        if not anchor: continue
-        ar,ac,av=anchor
-        s=min(h,w)
-        idx_r=rows.index(ar); idx_c=cols.index(ac)
-        start_r=idx_r-(s//2); start_c=idx_c-(s//2)
-        if start_r<0: start_r=0
-        if start_c<0: start_c=0
-        if start_r+s>h: start_r=h-s
-        if start_c+s>w: start_c=w-s
-        rows_sq=rows[start_r:start_r+s]; cols_sq=cols[start_c:start_c+s]
-        sqset={(r,c) for r in rows_sq for c in cols_sq}
-        for r in rows:
-            for c in cols:
-                out[r][c]=av if (r,c) in sqset else 3
+    h, w = len(grid), len(grid[0])
+    frames = []
+    for i in range(h):
+        for j in range(w):
+            if i+3<h and j+3<w:
+                ok = True
+                for x in range(4):
+                    if grid[i][j+x]!=1 or grid[i+3][j+x]!=1 or grid[i+x][j]!=1 or grid[i+x][j+3]!=1:
+                        ok = False; break
+                if ok:
+                    interior = (grid[i+1][j+1],grid[i+1][j+2],grid[i+2][j+1],grid[i+2][j+2])
+                    frames.append(((i,j),interior))
+    # find template frame: the one whose interior tuple is unique
+    counts = {}
+    for _,ints in frames:
+        counts[ints] = counts.get(ints,0)+1
+    tpl = next(ints for _,ints in frames if counts[ints]==1)
+    tpl_frame = next(pos for pos,ints in frames if ints==tpl)
+    # sort frames into 3x3 by position
+    rows = sorted(set(p[0] for p,_ in frames))
+    cols = sorted(set(p[1] for p,_ in frames))
+    rows.sort(); cols.sort()
+    def rot2(mat):
+        return (mat[2],mat[0],mat[3],mat[1])
+    def rot_k(mat,k):
+        for _ in range(k): mat = rot2(mat)
+        return mat
+    tr = rows.index(tpl_frame[0])
+    tc = cols.index(tpl_frame[1])
+    out = [row[:] for row in grid]
+    for (i,j),_ in frames:
+        r = rows.index(i); c = cols.index(j)
+        k = ((c-tc)-(r-tr))%4
+        m = rot_k(tpl,k)
+        out[i+1][j+1] = m[0]
+        out[i+1][j+2] = m[1]
+        out[i+2][j+1] = m[2]
+        out[i+2][j+2] = m[3]
     return out

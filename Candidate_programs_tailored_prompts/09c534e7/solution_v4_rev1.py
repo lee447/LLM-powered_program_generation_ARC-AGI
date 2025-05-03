@@ -1,68 +1,60 @@
 from typing import List
 def solve(grid: List[List[int]]) -> List[List[int]]:
-    R, C = len(grid), len(grid[0])
+    h, w = len(grid), len(grid[0])
+    frames = []
+    for i in range(h):
+        for j in range(w):
+            if i + 3 < h and j + 3 < w:
+                ok = True
+                for x in range(4):
+                    if grid[i][j+x] != 1 or grid[i+3][j+x] != 1 or grid[i+x][j] != 1 or grid[i+x][j+3] != 1:
+                        ok = False
+                        break
+                if ok:
+                    interior = (grid[i+1][j+1], grid[i+1][j+2], grid[i+2][j+1], grid[i+2][j+2])
+                    frames.append((i, j, interior))
+    frame_h = frame_w = 4
+    rows = sorted({i for i, _, _ in frames})
+    cols = sorted({j for _, j, _ in frames})
+    def cluster(coords, th):
+        res = []
+        curr = [coords[0]]
+        for x in coords[1:]:
+            if x - curr[-1] <= th:
+                curr.append(x)
+            else:
+                res.append(curr)
+                curr = [x]
+        res.append(curr)
+        return res
+    row_clusters = cluster(rows, frame_h)
+    col_clusters = cluster(cols, frame_w)
+    fmap = {(i, j): ints for i, j, ints in frames}
     out = [row[:] for row in grid]
-    visited = [[False]*C for _ in range(R)]
-    comps = []
-    for i in range(R):
-        for j in range(C):
-            if grid[i][j] == 1 and not visited[i][j]:
-                stack = [(i,j)]
-                visited[i][j] = True
-                comp = []
-                while stack:
-                    r,c = stack.pop()
-                    comp.append((r,c))
-                    for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)):
-                        nr, nc = r+dr, c+dc
-                        if 0 <= nr < R and 0 <= nc < C and grid[nr][nc] == 1 and not visited[nr][nc]:
-                            visited[nr][nc] = True
-                            stack.append((nr,nc))
-                comps.append(comp)
-    for comp in comps:
-        rs = [r for r,c in comp]
-        cs = [c for r,c in comp]
-        r0, r1 = min(rs), max(rs)
-        c0, c1 = min(cs), max(cs)
-        if r1 - r0 < 2 or c1 - c0 < 2:
-            continue
-        rows = list(range(r0+1, r1))
-        cols = list(range(c0+1, c1))
-        anchor = None
-        for r in rows:
-            for c in cols:
-                v = grid[r][c]
-                if v not in (0,1):
-                    anchor = (r, c, v)
+    def rot2(m): return (m[2], m[0], m[3], m[1])
+    def rot_k(m, k):
+        for _ in range(k): m = rot2(m)
+        return m
+    for rc in row_clusters:
+        for cc in col_clusters:
+            fc = [(i, j, fmap[(i, j)]) for i in rc for j in cc if (i, j) in fmap]
+            if len(fc) != len(rc) * len(cc): continue
+            counts = {}
+            for _, _, ints in fc:
+                counts[ints] = counts.get(ints, 0) + 1
+            for i, j, ints in fc:
+                if counts[ints] == 1:
+                    ti, tj, tpl = i, j, ints
                     break
-            if anchor:
-                break
-        if not anchor:
-            continue
-        ar, ac, av = anchor
-        h, w = len(rows), len(cols)
-        if h == 1 or w == 1:
-            for r in rows:
-                for c in cols:
-                    out[r][c] = av
-        else:
-            s = min(h, w)
-            idx_r = rows.index(ar)
-            idx_c = cols.index(ac)
-            start_r = idx_r - s//2
-            start_c = idx_c - s//2
-            if start_r < 0:
-                start_r = 0
-            if start_c < 0:
-                start_c = 0
-            if start_r + s > h:
-                start_r = h - s
-            if start_c + s > w:
-                start_c = w - s
-            rows_sq = rows[start_r:start_r+s]
-            cols_sq = cols[start_c:start_c+s]
-            sqset = {(r,c) for r in rows_sq for c in cols_sq}
-            for r in rows:
-                for c in cols:
-                    out[r][c] = av if (r,c) in sqset else 1
+            for i, j, _ in fc:
+                r = rc.index(i)
+                c = cc.index(j)
+                tr = rc.index(ti)
+                tc = cc.index(tj)
+                k = ((c - tc) - (r - tr)) % 4
+                m = rot_k(tpl, k)
+                out[i+1][j+1] = m[0]
+                out[i+1][j+2] = m[1]
+                out[i+2][j+1] = m[2]
+                out[i+2][j+2] = m[3]
     return out

@@ -1,62 +1,50 @@
 def solve(grid):
-    h = len(grid)
-    w = len(grid[0])
-    row_ints = []
-    col_ints = []
-    for r in range(h-1):
-        for c in range(w-1):
-            if grid[r][c]==5 and grid[r][c+1]==5 and grid[r+1][c]==5 and grid[r+1][c+1]==5:
-                row_ints.append((r, r+1))
-                col_ints.append((c, c+1))
-    row_ints = sorted(set(row_ints))
-    col_ints = sorted(set(col_ints))
-    rs = []
-    if row_ints:
-        first_start = row_ints[0][0]
-        if 0 <= first_start-1:
-            rs.append((0, first_start-1, 'boundary'))
-        for (p0,p1),(n0,n1) in zip(row_ints, row_ints[1:]):
-            a = p1+1; b = n0-1
-            if a<=b:
-                rs.append((a,b,'interior'))
-        last_end = row_ints[-1][1]
-        if last_end+1<=h-1:
-            rs.append((last_end+1,h-1,'boundary'))
-    cs = []
-    if col_ints:
-        first_start = col_ints[0][0]
-        if 0 <= first_start-1:
-            cs.append((0, first_start-1, 'boundary'))
-        for (p0,p1),(n0,n1) in zip(col_ints, col_ints[1:]):
-            a = p1+1; b = n0-1
-            if a<=b:
-                cs.append((a,b,'interior'))
-        last_end = col_ints[-1][1]
-        if last_end+1<=w-1:
-            cs.append((last_end+1,w-1,'boundary'))
-    s_rows = set()
-    for a,b,t in rs:
-        for r in range(a,b+1):
-            s_rows.add(r)
-    out = [[0]*w for _ in range(h)]
-    for a,b,t in rs:
-        for r in range(a,b+1):
-            if t=='interior':
-                for c in range(w):
-                    out[r][c] = 2
+    N, M = len(grid), len(grid[0])
+    out = [row[:] for row in grid]
+    grey_rows = [r for r in range(N) if any(grid[r][c] == 5 for c in range(M))]
+    bands = []
+    if grey_rows:
+        start = prev = grey_rows[0]
+        for r in grey_rows[1:]:
+            if r == prev + 1:
+                prev = r
             else:
-                for c in range(w):
-                    out[r][c] = 1
-    for a,b,t in cs:
-        for c in range(a,b+1):
-            if t=='interior':
-                for r in range(h):
-                    out[r][c] = 2
-            else:
-                for r in s_rows:
-                    out[r][c] = 1
-    for r in range(h):
-        for c in range(w):
-            if grid[r][c]==5:
-                out[r][c]=5
+                bands.append((start, prev))
+                start = prev = r
+        bands.append((start, prev))
+    grey_cols = sorted({c for r in range(bands[0][0], bands[0][1]+1) for c in range(M) if grid[r][c] == 5})
+    block_starts = [c for c in grey_cols if c+1 in grey_cols]
+    min_col = block_starts[0]
+    max_col = block_starts[-1] + 1
+    # fill inside bands
+    for start, end in bands:
+        for r in range(start, end+1):
+            for i in range(len(block_starts)-1):
+                a = block_starts[i] + 2
+                b = block_starts[i+1] - 1
+                for c in range(a, b+1):
+                    if out[r][c] != 5:
+                        out[r][c] = 2
+    # separator rows between bands
+    for i in range(len(bands)-1):
+        e = bands[i][1]
+        s2 = bands[i+1][0]
+        for r in range(e+1, s2):
+            for c in range(min_col, max_col+1):
+                out[r][c] = 2
+            for c in range(0, min_col):
+                out[r][c] = 1
+            for c in range(max_col+1, M):
+                out[r][c] = 1
+    # bottom rows after last band
+    last_end = bands[-1][1] if bands else -1
+    if last_end < N-1:
+        stripe_cols = []
+        for i in range(len(block_starts)-1):
+            a = block_starts[i] + 2
+            b = block_starts[i+1] - 1
+            stripe_cols.extend(range(a, b+1))
+        for r in range(last_end+1, N):
+            for c in stripe_cols:
+                out[r][c] = 1
     return out

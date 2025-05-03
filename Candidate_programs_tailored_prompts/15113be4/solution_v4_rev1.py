@@ -1,48 +1,65 @@
 def solve(grid):
-    R, C = len(grid), len(grid[0])
-    DIV, PLACE = 4, 1
-    full_rows = [i for i in range(R) if all(grid[i][j] == DIV for j in range(C))]
-    full_cols = [j for j in range(C) if all(grid[i][j] == DIV for i in range(R))]
-    row_segs = []
+    h, w = len(grid), len(grid[0])
+    sep_rows = [i for i in range(h) if all(grid[i][j] == 4 for j in range(w))]
+    sep_cols = [j for j in range(w) if all(grid[i][j] == 4 for i in range(h))]
+    sep_rows.sort()
+    sep_cols.sort()
+    row_bounds = []
     prev = 0
-    for r in sorted(full_rows):
-        if prev <= r - 1:
-            row_segs.append((prev, r - 1))
+    for r in sep_rows:
+        if r > prev:
+            row_bounds.append((prev, r - prev))
         prev = r + 1
-    if prev <= R - 1:
-        row_segs.append((prev, R - 1))
-    col_segs = []
+    if prev < h:
+        row_bounds.append((prev, h - prev))
+    col_bounds = []
     prev = 0
-    for c in sorted(full_cols):
-        if prev <= c - 1:
-            col_segs.append((prev, c - 1))
+    for c in sep_cols:
+        if c > prev:
+            col_bounds.append((prev, c - prev))
         prev = c + 1
-    if prev <= C - 1:
-        col_segs.append((prev, C - 1))
-    x_val = None
-    for i in range(R):
-        for j in range(C):
-            v = grid[i][j]
-            if v not in (0, PLACE, DIV):
-                x_val, i0, j0 = v, i, j
+    if prev < w:
+        col_bounds.append((prev, w - prev))
+    motif = None
+    mb_r = mb_c = None
+    for br, bh in row_bounds:
+        for bc, bw in col_bounds:
+            coords = []
+            color = None
+            for r in range(br, br + bh):
+                for c in range(bc, bc + bw):
+                    v = grid[r][c]
+                    if v not in (0, 1, 4):
+                        coords.append((r - br, c - bc))
+                        color = v
+            if coords:
+                motif = (color, coords)
+                mb_r, mb_c = br, bc
                 break
-        if x_val is not None:
+        if motif:
             break
-    for zi, (rs, re) in enumerate(row_segs):
-        if rs <= i0 <= re:
-            break
-    for zj, (cs, ce) in enumerate(col_segs):
-        if cs <= j0 <= ce:
-            break
-    zr, zr_end = row_segs[zi]
-    zc, zc_end = col_segs[zj]
-    offsets = [(i - zr, j - zc) for i in range(zr, zr_end + 1) for j in range(zc, zc_end + 1) if grid[i][j] == x_val]
-    for zi2, (rs, re) in enumerate(row_segs):
-        for zj2, (cs, ce) in enumerate(col_segs):
-            if zi2 == zi and zj2 == zj:
+    if motif is None:
+        return grid
+    color, rel = motif
+    inner_rows = []
+    for i in range(len(sep_rows) - 1):
+        start = sep_rows[i] + 1
+        height = sep_rows[i+1] - sep_rows[i] - 1
+        if height > 0:
+            inner_rows.append((start, height))
+    inner_cols = []
+    for j in range(len(sep_cols) - 1):
+        start = sep_cols[j] + 1
+        width = sep_cols[j+1] - sep_cols[j] - 1
+        if width > 0:
+            inner_cols.append((start, width))
+    out = [row[:] for row in grid]
+    for br, bh in inner_rows:
+        for bc, bw in inner_cols:
+            if br == mb_r and bc == mb_c:
                 continue
-            for dr, dc in offsets:
-                i2, j2 = rs + dr, cs + dc
-                if rs <= i2 <= re and cs <= j2 <= ce and grid[i2][j2] == PLACE:
-                    grid[i2][j2] = x_val
-    return grid
+            for dr, dc in rel:
+                r, c = br + dr, bc + dc
+                if 0 <= r < h and 0 <= c < w and grid[r][c] in (0, 1):
+                    out[r][c] = color
+    return out

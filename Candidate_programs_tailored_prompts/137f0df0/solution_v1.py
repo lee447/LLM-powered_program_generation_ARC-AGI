@@ -1,55 +1,49 @@
 def solve(grid):
-    h, w = len(grid), len(grid[0])
-    res = [[0]*w for _ in range(h)]
-    clusters = []
-    for r in range(h-1):
-        for c in range(w-1):
-            if grid[r][c]==5 and grid[r][c+1]==5 and grid[r+1][c]==5 and grid[r+1][c+1]==5:
-                clusters.append((r,c))
-    rs = sorted({r for r,c in clusters})
-    cs = sorted({c for r,c in clusters})
-    for r,c in clusters:
-        res[r][c]=5; res[r][c+1]=5; res[r+1][c]=5; res[r+1][c+1]=5
-    row_start, row_end = rs[0], rs[-1]+2
-    col_start, col_end = cs[0], cs[-1]+2
-    dr_gaps = [(rs[i]+2, rs[i+1]) for i in range(len(rs)-1) if rs[i+1] > rs[i]+2]
-    dc_gaps = [(cs[j]+2, cs[j+1]) for j in range(len(cs)-1) if cs[j+1] > cs[j]+2]
-    for r0, r1 in dr_gaps:
-        for r in range(r0, r1):
-            for c in range(col_start, col_end):
-                if res[r][c]==0:
-                    res[r][c]=2
-    for c0, c1 in dc_gaps:
-        for c in range(c0, c1):
-            for r in range(row_start, row_end):
-                if res[r][c]==0:
-                    res[r][c]=2
-    # horizontal stripe caps
-    left_w = col_start
-    right_w = w - col_end
-    for r0, r1 in dr_gaps:
-        if left_w>0:
-            for r in range(r0, r1):
-                for c in range(0, col_start):
-                    if res[r][c]==0:
-                        res[r][c]=1
-        if right_w>0:
-            for r in range(r0, r1):
-                for c in range(col_end, w):
-                    if res[r][c]==0:
-                        res[r][c]=1
-    # vertical stripe caps
-    top_h = row_start
-    bottom_h = h - row_end
-    for c0, c1 in dc_gaps:
-        if top_h>0:
-            for r in range(0, row_start):
-                for c in range(c0, c1):
-                    if res[r][c]==0:
-                        res[r][c]=1
-        if bottom_h>0:
-            for r in range(row_end, h):
-                for c in range(c0, c1):
-                    if res[r][c]==0:
-                        res[r][c]=1
-    return res
+    H, W = len(grid), len(grid[0])
+    out = [row[:] for row in grid]
+    grey_rows = [r for r in range(H) if any(grid[r][c] == 5 for c in range(W))]
+    bands = []
+    i = 0
+    while i < len(grey_rows):
+        if i+1 < len(grey_rows) and grey_rows[i+1] == grey_rows[i] + 1:
+            bands.append((grey_rows[i], grey_rows[i+1]))
+            i += 2
+        else:
+            i += 1
+    all_grey_cols = sorted({c for r in grey_rows for c in range(W) if grid[r][c] == 5})
+    min_g, max_g = all_grey_cols[0], all_grey_cols[-1]
+    stripe_cols = set()
+    for b0, b1 in bands:
+        cols = sorted({c for c in range(W) if grid[b0][c] == 5 or grid[b1][c] == 5})
+        runs = []
+        start = cols[0]
+        prev = cols[0]
+        for c in cols[1:]:
+            if c == prev + 1:
+                prev = c
+            else:
+                runs.append((start, prev))
+                start = c
+                prev = c
+        runs.append((start, prev))
+        for i in range(len(runs) - 1):
+            for c in range(runs[i][1] + 1, runs[i+1][0]):
+                out[b0][c] = 2
+                out[b1][c] = 2
+                stripe_cols.add(c)
+    first_end = bands[0][1]
+    last_start = bands[-1][0]
+    for r in range(first_end + 1, last_start):
+        if all(grid[r][c] == 0 for c in range(W)):
+            for c in range(min_g, max_g + 1):
+                out[r][c] = 2
+            for d in (1, 2):
+                if min_g - d >= 0:
+                    out[r][min_g - d] = 1
+                if max_g + d < W:
+                    out[r][max_g + d] = 1
+    for r in range(bands[-1][1] + 1, H):
+        if all(grid[r][c] == 0 for c in range(W)):
+            for c in stripe_cols:
+                out[r][c] = 1
+    return out

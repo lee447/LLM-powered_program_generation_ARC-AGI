@@ -1,28 +1,34 @@
 def solve(grid):
-    H, W = len(grid), len(grid[0])
+    H = len(grid)
+    W = len(grid[0])
+    dirs = [(1,0),(-1,0),(0,1),(0,-1)]
+    visited = [[False]*W for _ in range(H)]
+    clusters = []
+    for i in range(H):
+        for j in range(W):
+            if grid[i][j] and not visited[i][j]:
+                val = grid[i][j]
+                stack = [(i,j)]
+                comp = []
+                visited[i][j] = True
+                while stack:
+                    r,c = stack.pop()
+                    comp.append((r,c,val))
+                    for dr,dc in dirs:
+                        nr, nc = r+dr, c+dc
+                        if 0<=nr<H and 0<=nc<W and not visited[nr][nc] and grid[nr][nc]==val:
+                            visited[nr][nc] = True
+                            stack.append((nr,nc))
+                clusters.append(comp)
+    mins = sorted({min(r for r,c,_ in comp) for comp in clusters})
+    pattern = [0,-1,0,1]
     out = [[0]*W for _ in range(H)]
-    colors = set(cell for row in grid for cell in row if cell)
-    for c in colors:
-        coords = [(r, x) for r, row in enumerate(grid) for x, v in enumerate(row) if v==c]
-        rows = {}
-        for r, x in coords:
-            rows.setdefault(r, []).append(x)
-        stripe_rows = sorted(r for r, xs in rows.items() if max(xs)-min(xs)>=2)
-        bar_cols = sorted({x for r, xs in rows.items() if r not in stripe_rows for x in xs})
-        center = (bar_cols[0] + bar_cols[-1])//2
-        for r in stripe_rows:
-            for x in rows[r]:
-                out[r][x] = c
-        for i in range(len(stripe_rows)-1):
-            top, bot = stripe_rows[i], stripe_rows[i+1]
-            direction = -1 if i%2==0 else 1
-            for j,r in enumerate(range(top+1, bot)):
-                if j%2==0:
-                    for x in bar_cols:
-                        nx = x + direction
-                        if 0<=nx<W:
-                            out[r][nx] = c
-                else:
-                    for x in bar_cols:
-                        out[r][x] = c
+    for comp in clusters:
+        minr = min(r for r,c,_ in comp)
+        idx = mins.index(minr)
+        shift = pattern[idx%4]
+        if idx==0 or idx==len(mins)-1:
+            shift = 0
+        for r,c,v in comp:
+            out[r][c+shift] = v
     return out

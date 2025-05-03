@@ -1,16 +1,34 @@
 def solve(grid):
-    h=len(grid)
-    w=len(grid[0])
-    zone_w=w//3
-    zones=[[(r,c) for r in range(h) for c in range(i*zone_w,(i+1)*zone_w)] for i in range(3)]
-    colors=[]
-    nxt=1
-    for z in zones:
-        while nxt in (0,5): nxt+=1
-        colors.append(nxt)
-        nxt+=1
-    out=[[0]*w for _ in range(h)]
-    for i,z in enumerate(zones):
-        for r,c in z:
-            out[r][c]=colors[i]
-    return out
+    R = len(grid)
+    C = len(grid[0])
+    w = C // 3
+    res = [[0]*C for _ in range(R)]
+    fills = []
+    for b in range(3):
+        coords = []
+        for r in range(R):
+            for c in range(b*w, (b+1)*w):
+                if grid[r][c] == 5:
+                    coords.append((r, c))
+        if len(coords) == 1:
+            fill = 4
+        elif len(coords) == 8:
+            fill = 3
+        elif len(coords) == 3:
+            rows = [r for r, _ in coords]
+            if len(set(rows)) == 1:
+                if rows[0] == 0:
+                    fill = 6
+                else:
+                    fill = 1
+            else:
+                fill = 9
+        else:
+            fill = 0
+        fills.append(fill)
+    for b in range(3):
+        f = fills[b]
+        for r in range(R):
+            for c in range(b*w, (b+1)*w):
+                res[r][c] = f
+    return res

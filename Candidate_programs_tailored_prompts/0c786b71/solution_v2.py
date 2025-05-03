@@ -1,8 +1,13 @@
-from typing import List
-def solve(grid: List[List[int]]) -> List[List[int]]:
-    h = len(grid)
-    w = len(grid[0])
-    rev_rows = [row[::-1] for row in grid]
-    vr = rev_rows[::-1]
-    top = [r + r[::-1] for r in vr]
-    return top + top[::-1]
+def solve(grid):
+    h=len(grid)
+    w=len(grid[0])
+    A=[[grid[h-1-r][w-1-c] for c in range(w)] for r in range(h)]
+    H=2*h
+    W=2*w
+    out=[[0]*W for _ in range(H)]
+    for r in range(H):
+        for c in range(W):
+            rr=r if r<h else 2*h-1-r
+            cc=c if c<w else 2*w-1-c
+            out[r][c]=A[rr][cc]
+    return out

@@ -1,58 +1,39 @@
 from collections import Counter
-
 def solve(grid):
-    H=len(grid);W=len(grid[0])
-    def find_anchors():
-        anchors=[]
-        for r in range(H):
-            c=0
-            while c<W:
-                v=grid[r][c]
-                if v!=0:
-                    j=c
-                    while j<W and grid[r][j]==v: j+=1
-                    if j-c>=W//4:
-                        anchors.append(r)
-                        break
-                    c=j
-                else:
-                    c+=1
-        return sorted(set(anchors))
-    def flood(r,c,seen):
-        col=grid[r][c];stack=[(r,c)];comp=[]
-        while stack:
-            i,j=stack.pop()
-            if (i,j) in seen: continue
-            seen.add((i,j));comp.append((i,j))
-            for di,dj in ((1,0),(-1,0),(0,1),(0,-1)):
-                ni,nj=i+di,j+dj
-                if 0<=ni<H and 0<=nj<W and grid[ni][nj]==col:
-                    stack.append((ni,nj))
-        return comp
-    anchors=find_anchors()
-    segments=[];prev=-1
-    for a in anchors:
-        segments.append((prev+1,a-1));prev=a
-    segments.append((prev+1,H-1))
-    out=[[0]*W for _ in range(H)]
-    for r0,r1 in segments:
-        if r0>r1: continue
-        seen=set();comps=[]
-        for r in range(r0,r1+1):
-            if r in anchors: continue
-            for c in range(W):
-                if grid[r][c]!=0 and (r,c) not in seen:
-                    comp=flood(r,c,seen)
-                    if len(comp)>1:
-                        rs=[i for i,j in comp];cs=[j for i,j in comp]
-                        comps.append((min(rs),max(rs),min(cs),max(cs)))
-        if not comps: continue
-        heights=[b-a+1 for a,b,_,_ in comps]
-        h=Counter(heights).most_common(1)[0][0]
-        top=min(a for a,b,_,_ in comps if b-a+1==h)
-        for r in range(top,top+h):
-            if r in anchors: continue
-            for c in range(W):
-                if grid[r][c]!=0:
-                    out[r][c]=grid[r][c]
+    h=len(grid); w=len(grid[0])
+    nz=[sum(1 for v in row if v!=0) for row in grid]
+    thr=max(nz)//2
+    kept=[i for i,c in enumerate(nz) if c>=thr]
+    starts=[]
+    for i in kept:
+        row=grid[i]; j=0
+        while j<w:
+            if row[j]!=0:
+                starts.append(j)
+                k=j+1
+                while k<w and row[k]!=0: k+=1
+                j=k
+            else:
+                j+=1
+    sc=Counter(starts)
+    t2=max(1,len(kept)//2)
+    bs=sorted(s for s,c in sc.items() if c>=t2)
+    widths=[]
+    for i in kept:
+        for s in bs:
+            if s<w and grid[i][s]!=0:
+                k=s
+                while k<w and grid[i][k]!=0: k+=1
+                widths.append(k-s)
+    bw=Counter(widths).most_common(1)[0][0] if widths else 0
+    out=[[0]*w for _ in range(h)]
+    for i in range(h):
+        if nz[i]<thr: continue
+        tpl=[0]*bw
+        for k in range(bw):
+            vals=[grid[i][s+k] for s in bs if s+k<w and grid[i][s+k]!=0]
+            tpl[k]=Counter(vals).most_common(1)[0][0] if vals else 0
+        for s in bs:
+            for k in range(bw):
+                if s+k<w: out[i][s+k]=tpl[k]
     return out
