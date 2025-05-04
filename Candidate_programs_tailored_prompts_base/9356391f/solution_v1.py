@@ -1,0 +1,40 @@
+def solve(grid):
+    h=len(grid);w=len(grid[0])
+    out=[row[:] for row in grid]
+    pf=[]
+    for c in range(w):
+        if grid[0][c]!=0: pf.append(grid[0][c])
+        else: break
+    prefix_len=len(pf)
+    dot=None
+    for c in range(prefix_len,w):
+        if grid[0][c]!=0:
+            dot=grid[0][c]
+            break
+    rh=None
+    for r in range(h):
+        if all(v==5 for v in grid[r]):
+            rh=r;stripe_color=grid[r][0];break
+    ar=ac=acol=None
+    for r in range(rh+1,h):
+        for c in range(w):
+            if grid[r][c]!=0:
+                ar,ac,acol=r,c,grid[r][c]
+                break
+        if ar is not None: break
+    rev_pf=pf[::-1]
+    if dot is not None:
+        frames=[dot]+rev_pf[:prefix_len-1]
+    else:
+        frames=rev_pf[:prefix_len-1]
+    k=len(frames)
+    top=ar-k;left=ac-k;bot=ar+k;right=ac+k
+    for i,color in enumerate(frames):
+        r1=top+i; r2=bot-i; c1=left+i; c2=right-i
+        for c in range(c1,c2+1): out[r1][c]=color; out[r2][c]=color
+        for r in range(r1,r2+1): out[r][c1]=color; out[r][c2]=color
+    out[ar][ac]=acol
+    if dot is not None:
+        for c in range(prefix_len,w):
+            if grid[0][c]!=0: out[0][c]=stripe_color
+    return out
