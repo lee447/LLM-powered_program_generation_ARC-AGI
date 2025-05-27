@@ -37,13 +37,11 @@ Für die Ausführung ist ein OpenAI-API-Key erforderlich, der in einer Datei key
 
 OPENAI_API_KEY=...
 
-Zur Ausführung einer Pipeline das entsprechende Jupyter-Notebook starten und vollständig ausführen. Vorher sollte entweder:
-
+Zur Ausführung einer Pipeline das entsprechende Jupyter-Notebook starten und vollständig ausführen. 
+Vorher sollte entweder:
 - der Speicherort für Programme und Submission-Dateien angepasst werden.
-
 - bestehende Dateien (Ablageordner der Kandidatenprogramme und Submission-Datei) gelöscht werden.
-
-da sonst zusätzliche Programme zu bestehenden hinzukommen und dadurch Fehler auftreten können.
+Ansonsten werden zusätzliche Programme zu bestehenden hinzugefügt, wodurch Fehler auftreten können.
 
 --- 
 Beispiel: Ausführung "Pipeline_revision-loop.ipynb":
